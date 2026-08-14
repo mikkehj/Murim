@@ -1,61 +1,22 @@
 # Sword x Staff Guild Planner v4
 
-A completely static GitHub Pages guild roster and team planner.
+Static GitHub Pages guild roster/team planner. No Firebase, Supabase, database, backend, or external authentication.
 
-## Architecture
+## Shared roster loading
 
-- Static HTML/CSS/JavaScript only.
-- No Firebase.
-- No Supabase.
-- No database.
-- No backend.
-- No external authentication.
-- Roster/team state is stored in the browser's `localStorage`.
-- Master login state is stored in `sessionStorage`.
+The **Load from GitHub** button fetches `roster.json` from the same published GitHub Pages site. This means every visitor can see the same published roster once `roster.json` is committed to the repository and deployed by GitHub Pages.
 
-## Important limitation
+The browser still uses `localStorage` for its current working copy. Loading from GitHub replaces that local copy.
 
-Because this is a static GitHub Pages app with no backend, `localStorage` is **per browser/device**. A save made by the master on one device does **not** automatically become visible to other devices.
-
-To share the same roster across devices, use **Export** to create a JSON file, then use **Import** on another device/browser. GitHub Pages can host the application itself, but it cannot accept writes to a JSON file in the repository from browser JavaScript without a backend or GitHub API/authentication workflow.
-
-This is intentional and follows the no-database/no-backend requirement.
+Because the site is completely static, browser JavaScript cannot write changes back into the GitHub repository. To publish a changed shared roster, update/commit `roster.json` in the repository. The **Export** button creates a JSON backup that can be used to update that file.
 
 ## Master login
 
-Username: `Mika`  
+Username: `Mika`
 Password: `EvilEnvy`
 
-This is only a convenience lock. Anyone who can inspect the JavaScript can discover the credentials.
+This is intentionally only a convenience lock; the credentials are visible in the JavaScript.
 
 ## Team generation
 
-The generator:
-
-1. Separates members into the four classes.
-2. Sorts each class by power, highest first.
-3. Team 1 receives the highest-power member of every class.
-4. Team 2 receives the second-highest member of every class.
-5. It continues by rank until every member is assigned.
-6. A team contains at most one member of each class and never more than four players.
-7. Up to 15 teams are generated.
-8. Teams can contain fewer than four players when a class has fewer members.
-9. The UI shows total power, player count, present classes, and missing classes.
-
-## GitHub Pages deployment
-
-1. Create a GitHub repository.
-2. Upload `index.html`, `styles.css`, `app.js`, and `README.md` to the repository root.
-3. In GitHub, open **Settings → Pages**.
-4. Select deployment from the branch containing these files (usually `main`, root folder).
-5. Open the generated GitHub Pages URL.
-
-No build step is required.
-
-## Data
-
-The browser stores the current application state under:
-
-`localStorage` key: `sxs_guild_planner_v4`
-
-Exports are standard JSON and can be kept as backups.
+Members are separated into Berserker, Paladin, Archmage, and Arcanist; each class is sorted highest-power first; Team 1 gets rank 1 from each class, Team 2 gets rank 2, and so on. Teams never exceed four players and a team may have fewer than four players when a class has fewer members. A maximum of 15 teams is generated.
