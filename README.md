@@ -1,36 +1,33 @@
-# Sword x Staff Guild Planner
+# Sword x Staff Guild Planner — v2
 
-A free, static guild roster and team planner for Sword x Staff.
+## What's new
 
-## Features
+- Team quality summary
+- Average team power
+- Power spread percentage
+- Class diversity warnings
+- Three automatic-build modes:
+  - Balanced power + classes
+  - Pure power balance
+  - Prioritize class diversity
+- Better team cards
+- Team cards highlight teams above/below the average
+- Drag and drop between teams
 
-- Guild member roster
-- Four classes: Berserker, Paladin, Archmage, Arcanist
-- Power sorting/filtering/search
-- Team assignment
-- Automatic team balancing
-- Drag-and-drop team changes
-- JSON import/export
-- Browser local storage
-- Mobile-friendly layout
-- No backend and no database required
+## Install on GitHub Pages
 
-## GitHub Pages
-
-1. Create a **public** GitHub repository, for example `sword-x-staff-guild`.
+1. Create a **public** GitHub repository, e.g. `sword-x-staff-guild`.
 2. Upload `index.html`, `styles.css`, and `app.js` to the repository root.
 3. Open **Settings → Pages**.
-4. Under **Build and deployment**, select **Deploy from a branch**.
-5. Select branch **main** and folder **/(root)**.
+4. Choose **Deploy from a branch**.
+5. Select **main** and **/(root)**.
 6. Save.
-7. Wait for GitHub Pages to deploy.
+7. Open the URL GitHub provides.
 
-Your project site will normally be:
+## Data
 
-`https://YOUR-USERNAME.github.io/sword-x-staff-guild/`
+The app uses browser local storage. It does not currently have a shared cloud database. Use Export regularly to make a backup.
 
-The roster is stored locally in each browser. Export the JSON file for backup or to move the roster to another device.
+## Next possible version
 
-## Important
-
-This is an unofficial fan-made tool and is not affiliated with the Sword x Staff developers or publisher.
+A shared database/authentication system can be added later so the guild leader and members can all work with one shared roster.
