@@ -1,87 +1,28 @@
-# Sword x Staff – Guild Planner v4
+# Sword x Staff - Guild Planner v4
 
-A **completely static** web app for managing a *Sword x Staff* guild roster and generating ranked teams.
+A fully responsive, serverless, static guild planning tool designed for the mobile game **Sword x Staff** and fully optimized for hosting via **GitHub Pages**.
 
-Designed for **GitHub Pages**. No backend, no Firebase, no Supabase, no database, no external authentication service.
+## 🚀 Features Built-In
+- **Zero Backend Footprint**: Fully client-side, powered entirely by a modern `localStorage` transaction engine pipeline and standard data schema structure templates.
+- **Dual Mode Access Matrix Architecture**:
+  - **Viewer Mode**: Anyone can access the page URL layout view to monitor stats, filtered roster lists, and the optimized active group distributions matrix.
+  - **Master Editor Mode**: Gain authorized administrative control over records parsing tools using standard master variables.
+- **Dynamic Team Composition Algorithm**: Automatically splits players by their game classes (`Berserker`, `Paladin`, `Archmage`, `Arcanist`), filters power attributes downward from highest to lowest metrics, and groups them dynamically into teams. 
+- **JSON Utility Pipeline Engine**: Backup, modify, restore, and transfer player record items instantly through structured external static files.
 
-## Features
+## 🔑 Administrative Access Credentials
+- **Master Username:** `Mika`
+- **Master Password:** `EvilEnvy`
 
-- **Viewer mode** (default): anyone can open the page and view the roster + generated teams.
-- **Master mode**: hard-coded login lets the guild leader add / edit / delete members, generate teams, import & export data.
-- **Team generation algorithm** (exact ranking):
-  1. Split members by the 4 classes (Berserker, Paladin, Archmage, Arcanist).
-  2. Sort each class highest → lowest power.
-  3. Team 1 gets the #1 player of each class, Team 2 the #2, and so on.
-  4. Teams never exceed 4 players. Missing classes are clearly shown.
-  5. Maximum 15 teams.
-- Local storage persistence (per browser).
-- JSON Export / Import so the master can share the same roster across devices or with co-leaders.
-- Search, class filter, and multiple sort options.
-- Responsive / mobile-friendly dark UI.
-- Zero external dependencies (vanilla HTML + CSS + JS).
-
-## Master credentials
-
-```
-Username: Mika
-Password: EvilEnvy
-```
-
-These are intentionally hard-coded in `app.js`. Anyone who inspects the source can see them. This is acceptable for this project because there is no sensitive data.
-
-## How to use (GitHub Pages)
-
-1. Create a new repository (or use an existing one).
-2. Upload / push these four files to the root (or to the `docs/` folder / `gh-pages` branch – whatever you configure for Pages):
+## 🛠️ GitHub Pages Implementation Guide
+1. Create a fresh public or private code repository inside your **GitHub profile dashboard panel**.
+2. Drag and drop the following unpacked core system static files directly into the repository root:
    - `index.html`
    - `styles.css`
    - `app.js`
-   - `README.md` (optional)
-3. Enable **GitHub Pages** in the repository settings (Source: Deploy from a branch → main / root or docs).
-4. Open the Pages URL. The site is ready.
+3. Navigate to repository **Settings** -> **Pages** sub-panel section link area option.
+4. Set your deployment pipeline source selector option to execute from the root directory path (`/`) under the main deployment branch loop context.
+5. Save your settings. Your application URL target endpoint will go online within a minute!
 
-### Sharing the same roster across devices
-
-Because data lives in each browser’s `localStorage`, different devices start empty.
-
-**Recommended workflow:**
-
-1. Master logs in on one device and builds the roster.
-2. Click **Export** → downloads a `.json` file.
-3. On another device (or after clearing browser data): Master logs in → **Import** the JSON file.
-4. Optionally commit the exported JSON into the repo if you want a public snapshot (viewers still only see what is in their own localStorage unless you add a static `roster.json` loader later).
-
-## File structure
-
-```
-.
-├── index.html   # Markup & modals
-├── styles.css   # Dark theme, responsive layout
-├── app.js       # All logic (auth, CRUD, team algorithm, storage)
-└── README.md
-```
-
-## Team generation example
-
-| Class     | Players (power)          |
-|-----------|--------------------------|
-| Berserker | A 2.0M, B 1.8M, C 1.5M   |
-| Paladin   | D 1.9M, E 1.7M, F 1.3M   |
-| Archmage  | G 2.1M, H 1.6M, I 1.4M   |
-| Arcanist  | J 1.8M, K 1.5M, L 1.2M   |
-
-**Result**
-
-- **Team 1**: A + D + G + J  (strongest of each class)
-- **Team 2**: B + E + H + K
-- **Team 3**: C + F + I + L
-
-If a class has fewer members, later teams simply have fewer than 4 players and list the missing classes.
-
-## Version
-
-**v4** – pure static / localStorage implementation. No Firebase or any backend.
-
-## License
-
-Free to use and modify for your guild.
+---
+*Developed under version framework platform release metrics v4. Architecture strictly isolated from external dynamic SaaS integrations or microservice middleware layers.*
