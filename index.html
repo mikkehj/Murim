@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sword x Staff Guild Planner (v4)</title>
+    <title>Sword x Staff - Guild Planner</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body>
+<body class="viewer-mode" id="app-body">
+
     <!-- HEADER -->
     <header class="app-header">
         <div class="header-container">
@@ -15,113 +16,108 @@
                 <span class="version-tag">v4</span>
             </div>
             <div class="header-actions">
-                <button id="btn-login-open" class="btn btn-primary mode-viewer-only">Master Login</button>
-                <button id="btn-add-member" class="btn btn-success mode-master-only" style="display: none;">+ Add Member</button>
-                <button id="btn-export" class="btn id-btn-neutral">Export JSON</button>
-                <button id="btn-import-trigger" class="btn id-btn-neutral mode-master-only" style="display: none;">Import JSON</button>
+                <button id="btn-login-open" class="btn btn-primary">Master Login</button>
+                <button id="btn-add-member-open" class="btn btn-success auth-only">+ Add Member</button>
+                <button id="btn-export" class="btn btn-secondary auth-only">Export JSON</button>
+                <button id="btn-import-trigger" class="btn btn-secondary auth-only">Import JSON</button>
                 <input type="file" id="file-import" accept=".json" style="display: none;">
-                <button id="btn-logout" class="btn btn-danger mode-master-only" style="display: none;">Logout</button>
+                <button id="btn-logout" class="btn btn-danger auth-only">Logout</button>
             </div>
         </div>
     </header>
 
-    <!-- MAIN CONTAINER -->
-    <main class="main-container">
-        <!-- STATUS BANNER -->
-        <div id="status-banner" class="status-banner banner-viewer">
-            <span id="status-text">🌐 Current Mode: <strong>Viewer Mode</strong> (Read-Only)</span>
-        </div>
+    <!-- STATUS BANNER -->
+    <div id="status-banner" class="status-banner banner-viewer">
+        <span id="status-text">Viewing Mode (Read-Only)</span>
+    </div>
 
-        <!-- STATS DASHBOARD -->
-        <section class="stats-section">
+    <main class="app-container">
+        <!-- STATISTICS DASHBOARD -->
+        <section class="dashboard-section">
+            <h2>Guild Statistics</h2>
             <div class="stats-grid">
                 <div class="stat-card">
-                    <h3>Total Members</h3>
-                    <p id="stat-count">0</p>
+                    <span class="stat-label">Total Members</span>
+                    <span id="stat-total-members" class="stat-value">0</span>
                 </div>
                 <div class="stat-card">
-                    <h3>Total Power</h3>
-                    <p id="stat-power">0</p>
+                    <span class="stat-label">Total Power</span>
+                    <span id="stat-total-power" class="stat-value">0</span>
                 </div>
                 <div class="stat-card">
-                    <h3>Average Power</h3>
-                    <p id="stat-avg">0</p>
+                    <span class="stat-label">Average Power</span>
+                    <span id="stat-avg-power" class="stat-value">0</span>
                 </div>
                 <div class="stat-card">
-                    <h3>Unassigned Players</h3>
-                    <p id="stat-unassigned">0</p>
+                    <span class="stat-label">Unassigned Players</span>
+                    <span id="stat-unassigned" class="stat-value">0</span>
                 </div>
             </div>
         </section>
 
-        <!-- CONTROLS & FILTERING -->
-        <section class="controls-section">
-            <div class="controls-wrapper">
-                <input type="text" id="search-input" placeholder="Search player name...">
-                
-                <select id="filter-class">
-                    <option value="">All Classes</option>
-                    <option value="Berserker">Berserker</option>
-                    <option value="Paladin">Paladin</option>
-                    <option value="Archmage">Archmage</option>
-                    <option value="Arcanist">Arcanist</option>
-                </select>
+        <!-- ROSTER CONTROLS & TABLE -->
+        <section class="roster-section">
+            <div class="section-header">
+                <h2>Guild Roster</h2>
+                <div class="filters-container">
+                    <input type="text" id="search-player" placeholder="Search player name...">
+                    
+                    <select id="filter-class">
+                        <option value="">All Classes</option>
+                        <option value="Berserker">Berserker</option>
+                        <option value="Paladin">Paladin</option>
+                        <option value="Archmage">Archmage</option>
+                        <option value="Arcanist">Arcanist</option>
+                    </select>
 
-                <select id="sort-select">
-                    <option value="power-desc">Power: High → Low</option>
-                    <option value="power-asc">Power: Low → High</option>
-                    <option value="name-asc">Name: A-Z</option>
-                    <option value="class-asc">Class: A-Z</option>
-                    <option value="team-asc">Team Number</option>
-                </select>
-                
-                <button id="btn-generate-teams" class="btn btn-accent mode-master-only" style="display: none;">⚙️ Generate Ranked Teams</button>
+                    <select id="sort-roster">
+                        <option value="power-desc">Power: High → Low</option>
+                        <option value="power-asc">Power: Low → High</option>
+                        <option value="name-asc">Name: A-Z</option>
+                        <option value="class-asc">Class Name</option>
+                        <option value="team-asc">Team Number</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-responsive">
+                <table class="roster-table">
+                    <thead>
+                        <tr>
+                            <th>Player Name</th>
+                            <th>Class</th>
+                            <th>Power</th>
+                            <th>Assigned Team</th>
+                            <th class="auth-only">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="roster-tbody">
+                        <!-- Dynamic content -->
+                    </tbody>
+                </table>
             </div>
         </section>
 
-        <!-- TWO COLUMN WORKSPACE -->
-        <div class="workspace-grid">
-            <!-- ROSTER COLUMN -->
-            <section class="roster-column">
-                <div class="section-title-bar">
-                    <h2>Guild Roster</h2>
-                </div>
-                <div class="table-responsive">
-                    <table class="roster-table">
-                        <thead>
-                            <tr>
-                                <th>Player Name</th>
-                                <th>Class</th>
-                                <th>Power</th>
-                                <th>Assigned Team</th>
-                                <th class="mode-master-only" style="display: none;">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="roster-tbody">
-                            <!-- Dynamic Content -->
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-
-            <!-- TEAMS COLUMN -->
-            <section class="teams-column">
-                <div class="section-title-bar">
-                    <h2>Ranked Teams (Max 15)</h2>
-                </div>
-                <div id="teams-grid" class="teams-grid">
-                    <!-- Dynamic Content -->
-                </div>
-            </section>
-        </div>
+        <!-- TEAM BUILDER -->
+        <section class="teams-section">
+            <div class="section-header">
+                <h2>Ranked Balanced Teams</h2>
+                <button id="btn-generate-teams" class="btn btn-primary auth-only">Generate Ranked Teams</button>
+            </div>
+            <div id="teams-grid" class="teams-grid">
+                <!-- Dynamic cards -->
+            </div>
+        </section>
     </main>
 
-    <!-- MODAL: LOGIN -->
-    <div id="modal-login" class="modal-backdrop">
-        <div class="modal-content">
+    <!-- MODAL BACKDROP CONTAINER -->
+    <div id="modal-container" class="modal-container">
+        
+        <!-- LOGIN MODAL -->
+        <div id="modal-login" class="modal-content">
             <div class="modal-header">
-                <h2>Master Authorization</h2>
-                <span class="modal-close" id="modal-login-close">&times;</span>
+                <h3>Master Login</h3>
+                <button class="modal-close" data-close="modal-login">&times;</button>
             </div>
             <form id="form-login">
                 <div class="form-group">
@@ -132,27 +128,25 @@
                     <label for="login-pass">Password</label>
                     <input type="password" id="login-pass" required autocomplete="current-password">
                 </div>
-                <div id="login-error" class="error-msg" style="display: none;">Invalid credentials! Please try again.</div>
+                <div id="login-error" class="error-text" style="display: none;">Invalid username or password.</div>
                 <div class="modal-actions">
-                    <button type="button" class="btn id-btn-neutral" id="btn-login-cancel">Cancel</button>
+                    <button type="button" class="btn btn-secondary" data-close="modal-login">Cancel</button>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
             </form>
         </div>
-    </div>
 
-    <!-- MODAL: MEMBER CRUD -->
-    <div id="modal-member" class="modal-backdrop">
-        <div class="modal-content">
+        <!-- ADD/EDIT MEMBER MODAL -->
+        <div id="modal-member" class="modal-content">
             <div class="modal-header">
-                <h2 id="modal-member-title">Add Guild Member</h2>
-                <span class="modal-close" id="modal-member-close">&times;</span>
+                <h3 id="member-modal-title">Add Guild Member</h3>
+                <button class="modal-close" data-close="modal-member">&times;</button>
             </div>
             <form id="form-member">
                 <input type="hidden" id="member-id">
                 <div class="form-group">
                     <label for="member-name">Player Name</label>
-                    <input type="text" id="member-name" required placeholder="e.g. Artorias">
+                    <input type="text" id="member-name" required placeholder="e.g. Arthur">
                 </div>
                 <div class="form-group">
                     <label for="member-class">Class Slot</label>
@@ -168,17 +162,17 @@
                     <input type="number" id="member-power" required min="0" placeholder="e.g. 1500000">
                 </div>
                 <div class="form-group">
-                    <label for="member-notes">Strategic Notes (Optional)</label>
-                    <textarea id="member-notes" rows="3" placeholder="e.g. Active in Guild Wars, backup caller"></textarea>
+                    <label for="member-notes">Notes (Optional)</label>
+                    <textarea id="member-notes" rows="2" placeholder="Gear sets, availability, etc."></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn id-btn-neutral" id="btn-member-cancel">Cancel</button>
-                    <button type="submit" class="btn btn-success" id="btn-member-submit">Save Member</button>
+                    <button type="button" class="btn btn-secondary" data-close="modal-member">Cancel</button>
+                    <button type="submit" id="btn-member-submit" class="btn btn-success">Save Member</button>
                 </div>
             </form>
         </div>
+
     </div>
 
-    <script src="app.js"></script>
 </body>
 </html>
