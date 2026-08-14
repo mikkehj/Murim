@@ -1,28 +1,61 @@
-# 🗡️ Sword x Staff - Guild Planner (v4)
+# Sword x Staff Guild Planner v4
 
-A clean, light, responsive **completely static client-side web application** structured specifically for managing competitive player setups inside the mobile game *"Sword x Staff"*. Optimized for direct deployment hosting configurations on **GitHub Pages** without any backend service hooks, Firebase setups, or Supabase configurations.
+A completely static GitHub Pages guild roster and team planner.
 
-## 🔐 Operator Control Access Profile
-*   **Master Login Username:** `Mika`
-*   **Master Login Password:** `EvilEnvy`
+## Architecture
 
-*Note: Authorization sessions are mapped locally via browser cache `sessionStorage` buffers. Once authorized, you keep admin modifier attributes functional throughout browser reboots until you select the "Logout" modifier tool manually.*
+- Static HTML/CSS/JavaScript only.
+- No Firebase.
+- No Supabase.
+- No database.
+- No backend.
+- No external authentication.
+- Roster/team state is stored in the browser's `localStorage`.
+- Master login state is stored in `sessionStorage`.
 
-## 🚀 Instant Deployment Process to GitHub Pages
-1. Create a fresh **public or private code storage container repository** inside your personal GitHub web portal dashboard profile.
-2. Drag, drop, and submit all four source bundle core tracking layout items from this ZIP package directly into the repository root index branch directory:
-   * `index.html`
-   * `styles.css`
-   * `app.js`
-   * `README.md`
-3. Enter your repository's management panel, navigate over into the **Settings** sub-tab menu link option on the upper right context tray sidebar, and click on **Pages**.
-4. Inside the primary deployment pipeline source property configuration picker form menu, ensure **"Deploy from a branch"** is highlighted, select your target primary base tracking head pointer target node branch (commonly named `main` or `master`), flag the target output folder element parameter marker selection as `/root`, and tap **Save**.
-5. Give the automated build scripts between 30 and 60 seconds to execute, then refresh your page to uncover your public web platform URL address. Share this link directly with your teammates so they can access live squad configurations.
+## Important limitation
 
-## 🧠 Dynamic Composition Roster Balancing Framework Flow
-The app includes a specialized tier matching loop sequence that assigns players to teams automatically based on their combat power and class selection:
-1. Filters and separates your total guild members inventory by their respective specialized combat profiles (`Berserker`, `Paladin`, `Archmage`, `Arcanist`).
-2. Forces sorting properties criteria ranking inside individual class collections sorting from high Combat Power (CP) records down to lowest values.
-3. Forms **Team 1** directly by fetching the highest ranked top player record available across all four class buckets simultaneously.
-4. Drops down to construct **Team 2** using the second-highest records, moving down continuously until all records are mapped up to a cap of **15 maximum teams**.
-5. Teams missing composition segments display a dashed warning badge labeled **"Missing [Class]"**, showing you where adjustments are needed.
+Because this is a static GitHub Pages app with no backend, `localStorage` is **per browser/device**. A save made by the master on one device does **not** automatically become visible to other devices.
+
+To share the same roster across devices, use **Export** to create a JSON file, then use **Import** on another device/browser. GitHub Pages can host the application itself, but it cannot accept writes to a JSON file in the repository from browser JavaScript without a backend or GitHub API/authentication workflow.
+
+This is intentional and follows the no-database/no-backend requirement.
+
+## Master login
+
+Username: `Mika`  
+Password: `EvilEnvy`
+
+This is only a convenience lock. Anyone who can inspect the JavaScript can discover the credentials.
+
+## Team generation
+
+The generator:
+
+1. Separates members into the four classes.
+2. Sorts each class by power, highest first.
+3. Team 1 receives the highest-power member of every class.
+4. Team 2 receives the second-highest member of every class.
+5. It continues by rank until every member is assigned.
+6. A team contains at most one member of each class and never more than four players.
+7. Up to 15 teams are generated.
+8. Teams can contain fewer than four players when a class has fewer members.
+9. The UI shows total power, player count, present classes, and missing classes.
+
+## GitHub Pages deployment
+
+1. Create a GitHub repository.
+2. Upload `index.html`, `styles.css`, `app.js`, and `README.md` to the repository root.
+3. In GitHub, open **Settings → Pages**.
+4. Select deployment from the branch containing these files (usually `main`, root folder).
+5. Open the generated GitHub Pages URL.
+
+No build step is required.
+
+## Data
+
+The browser stores the current application state under:
+
+`localStorage` key: `sxs_guild_planner_v4`
+
+Exports are standard JSON and can be kept as backups.

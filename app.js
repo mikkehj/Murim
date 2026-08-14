@@ -1,530 +1,242 @@
-// STATE CONTROLLER MANAGER
-const STATE = {
-    authMode: 'viewer', // 'viewer' | 'master'
-    roster: [],
-    teams: []
-};
+(() => {
+  "use strict";
 
-// INITIAL DEFAULTS (Preloaded if localStorage empty)
-const DEFAULT_ROSTER = [
-    { id: "1", name: "Arthur", class: "Berserker", power: 2000000, notes: "Main frontline core" },
-    { id: "2", name: "Galahad", class: "Berserker", power: 1800000, notes: "" },
-    { id: "3", name: "Lancelot", class: "Berserker", power: 1500000, notes: "" },
-    { id: "4", name: "Boudica", class: "Paladin", power: 1900000, notes: "Main tank lead" },
-    { id: "5", name: "Joan", class: "Paladin", power: 1700000, notes: "" },
-    { id: "6", name: "Leonidas", class: "Paladin", power: 1300000, notes: "" },
-    { id: "7", name: "Merlin", class: "Archmage", power: 2100000, notes: "Burst damage anchor" },
-    { id: "8", name: "Morgana", class: "Archmage", power: 1600000, notes: "" },
-    { id: "9", name: "Circe", class: "Archmage", power: 1400000, notes: "" },
-    { id: "10", name: "Hermes", class: "Arcanist", power: 1800000, notes: "Core support buffers" },
-    { id: "11", name: "Hecate", class: "Arcanist", power: 1500000, notes: "" },
-    { id: "12", name: "Thoth", class: "Arcanist", power: 1200000, notes: "" }
-];
+  const STORAGE_KEY = "sxs_guild_planner_v4";
+  const SESSION_KEY = "sxs_guild_master_v4";
+  const CLASSES = ["Berserker", "Paladin", "Archmage", "Arcanist"];
+  const CREDENTIALS = { username: "Mika", password: "EvilEnvy" };
 
-// CACHE SELECTOR NODES
-const bodyEl = document.getElementById("app-body");
-const statusBanner = document.getElementById("status-banner");
-const statusText = document.getElementById("status-text");
+  let state = loadState();
+  let master = sessionStorage.getItem(SESSION_KEY) === "true";
+  let pendingDeleteId = null;
 
-// HEADER ACTIONS
-const btnLoginOpen = document.getElementById("btn-login-open");
-const btnLogout = document.getElementById("btn-logout");
-const btnAddMemberOpen = document.getElementById("btn-add-member-open");
-const btnExport = document.getElementById("btn-export");
-const btnImportTrigger = document.getElementById("btn-import-trigger");
-const fileImportInput = document.getElementById("file-import");
+  const $ = id => document.getElementById(id);
+  const els = {
+    loginBtn: $("loginBtn"), logoutBtn: $("logoutBtn"), exportBtn: $("exportBtn"),
+    importBtn: $("importBtn"), importFile: $("importFile"), status: $("statusBanner"),
+    memberCount: $("memberCount"), totalPower: $("totalPower"), averagePower: $("averagePower"),
+    unassignedCount: $("unassignedCount"), rosterBody: $("rosterBody"), emptyRoster: $("emptyRoster"),
+    addMemberBtn: $("addMemberBtn"), generateBtn: $("generateBtn"), teams: $("teams"), noTeams: $("noTeams"),
+    searchInput: $("searchInput"), classFilter: $("classFilter"), sortSelect: $("sortSelect"),
+    loginDialog: $("loginDialog"), loginForm: $("loginForm"), username: $("username"), password: $("password"),
+    loginError: $("loginError"), memberDialog: $("memberDialog"), memberForm: $("memberForm"),
+    memberDialogTitle: $("memberDialogTitle"), memberId: $("memberId"), memberName: $("memberName"),
+    memberClass: $("memberClass"), memberPower: $("memberPower"), memberNotes: $("memberNotes"),
+    confirmDialog: $("confirmDialog"), confirmText: $("confirmText"), confirmDelete: $("confirmDelete")
+  };
 
-// MODAL NODE WRAPPERS
-const modalContainer = document.getElementById("modal-container");
-const modalLogin = document.getElementById("modal-login");
-const modalMember = document.getElementById("modal-member");
+  function loadState() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) || "null");
+      if (parsed && Array.isArray(parsed.members)) return { members: parsed.members, teams: Array.isArray(parsed.teams) ? parsed.teams : [] };
+    } catch (_) {}
+    return { members: [], teams: [] };
+  }
 
-// FORMS
-const formLogin = document.getElementById("form-login");
-const loginError = document.getElementById("login-error");
-const formMember = document.getElementById("form-member");
-const memberModalTitle = document.getElementById("member-modal-title");
+  function saveState() {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  }
 
-// FILTER INPUT DRIVERS
-const searchPlayer = document.getElementById("search-player");
-const filterClass = document.getElementById("filter-class");
-const sortRoster = document.getElementById("sort-roster");
+  function uid() {
+    return crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2);
+  }
 
-// DISPLAY TARGET GRIDS
-const rosterTbody = document.getElementById("roster-tbody");
-const teamsGrid = document.getElementById("teams-grid");
-const btnGenerateTeams = document.getElementById("btn-generate-teams");
+  function fmtPower(n) { return Number(n || 0).toLocaleString("en-US"); }
 
-// LIFECYCLE REBOOT ROUTINE
-function initializeApp() {
-    // 1. Session authorization recovery
-    const savedAuth = sessionStorage.getItem("sxs_auth_mode");
-    if (savedAuth === "master") {
-        setAuthMode("master");
-    } else {
-        setAuthMode("viewer");
+  function generateTeams(members) {
+    const byClass = Object.fromEntries(CLASSES.map(c => [c, []]));
+    members.forEach(m => { if (byClass[m.class]) byClass[m.class].push(m); });
+    CLASSES.forEach(c => byClass[c].sort((a,b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name)));
+
+    const max = Math.min(15, Math.max(0, ...CLASSES.map(c => byClass[c].length)));
+    const teams = [];
+    for (let i = 0; i < max; i++) {
+      const players = CLASSES.map(c => byClass[c][i]).filter(Boolean);
+      teams.push({
+        number: i + 1,
+        playerIds: players.map(p => p.id),
+        totalPower: players.reduce((s,p) => s + Number(p.power), 0)
+      });
     }
+    return teams;
+  }
 
-    // 2. Local storage roster array recovery
-    const savedRoster = localStorage.getItem("sxs_guild_roster");
-    if (savedRoster) {
-        try {
-            STATE.roster = JSON.parse(savedRoster);
-        } catch(e) {
-            STATE.roster = [...DEFAULT_ROSTER];
-        }
-    } else {
-        STATE.roster = [...DEFAULT_ROSTER];
-        saveRosterToStorage();
-    }
+  function getTeamMap() {
+    const map = new Map();
+    state.teams.forEach(t => (t.playerIds || []).forEach(id => map.set(id, t.number)));
+    return map;
+  }
 
-    // 3. Recover last calculated team set if available
-    const savedTeams = localStorage.getItem("sxs_generated_teams");
-    if (savedTeams) {
-        try { STATE.teams = JSON.parse(savedTeams); } catch(e) { STATE.teams = []; }
-    }
-
-    // 4. Register Event Triggers
-    setupEventHandlers();
-
-    // 5. Build presentation view boards
-    renderAll();
-}
-
-// PERSISTENCE MANAGER HOOKS
-function saveRosterToStorage() {
-    localStorage.setItem("sxs_guild_roster", JSON.stringify(STATE.roster));
-}
-function saveTeamsToStorage() {
-    localStorage.setItem("sxs_generated_teams", JSON.stringify(STATE.teams));
-}
-
-// AUTHORIZATION DISPATCH WORKERS
-function setAuthMode(mode) {
-    STATE.authMode = mode;
-    if (mode === "master") {
-        bodyEl.className = "master-mode";
-        statusBanner.className = "status-banner banner-master";
-        statusText.textContent = "Master Operator Mode (Full Access)";
-        sessionStorage.setItem("sxs_auth_mode", "master");
-    } else {
-        bodyEl.className = "viewer-mode";
-        statusBanner.className = "status-banner banner-viewer";
-        statusText.textContent = "Viewing Mode (Read-Only)";
-        sessionStorage.setItem("sxs_auth_mode", "viewer");
-    }
-}
-
-// CENTRAL MODAL VISIBILITY CONTROLLER
-function openModal(modalNode) {
-    modalContainer.classList.add("active");
-    modalNode.classList.add("active");
-}
-
-function closeAllModals() {
-    modalContainer.classList.remove("active");
-    modalLogin.classList.remove("active");
-    modalMember.classList.remove("active");
-}
-
-// COMPREHENSIVE RE-RENDER HOOK
-function renderAll() {
+  function render() {
+    renderAuth();
     renderStats();
-    renderRosterTable();
-    renderTeamsGrid();
-}
+    renderRoster();
+    renderTeams();
+  }
 
-// RENDER STATISTICS PANEL
-function renderStats() {
-    const totalMembers = STATE.roster.length;
-    let totalPower = 0;
-    STATE.roster.forEach(m => totalPower += parseInt(m.power || 0, 10));
-    const avgPower = totalMembers > 0 ? Math.round(totalPower / totalMembers) : 0;
+  function renderAuth() {
+    els.loginBtn.hidden = master;
+    els.logoutBtn.hidden = !master;
+    els.exportBtn.hidden = !master;
+    els.importBtn.hidden = !master;
+    els.addMemberBtn.hidden = !master;
+    els.generateBtn.hidden = !master;
+    els.status.className = "status " + (master ? "master" : "viewer");
+    els.status.textContent = master
+      ? "Master mode — you can edit the roster, generate teams, and import/export data."
+      : "Viewer mode — roster and teams are read-only.";
+    document.querySelectorAll(".master-col").forEach(e => e.style.display = master ? "" : "none");
+    document.querySelectorAll("td.actions-cell").forEach(e => e.style.display = master ? "" : "none");
+  }
 
-    // Count players that are actually grouped in current live teams layout matrix array
-    let assignedCount = 0;
-    STATE.teams.forEach(t => {
-        assignedCount += (t.players ? t.players.length : 0);
+  function renderStats() {
+    const total = state.members.reduce((s,m) => s + Number(m.power || 0), 0);
+    const teamsAssigned = new Set(state.teams.flatMap(t => t.playerIds || []));
+    els.memberCount.textContent = state.members.length;
+    els.totalPower.textContent = fmtPower(total);
+    els.averagePower.textContent = state.members.length ? fmtPower(Math.round(total / state.members.length)) : "0";
+    els.unassignedCount.textContent = state.members.filter(m => !teamsAssigned.has(m.id)).length;
+  }
+
+  function renderRoster() {
+    const q = els.searchInput.value.trim().toLowerCase();
+    const cf = els.classFilter.value;
+    const sort = els.sortSelect.value;
+    const teamMap = getTeamMap();
+    let rows = state.members.filter(m => (!q || m.name.toLowerCase().includes(q)) && (!cf || m.class === cf));
+
+    rows.sort((a,b) => {
+      if (sort === "power-desc") return Number(b.power) - Number(a.power) || a.name.localeCompare(b.name);
+      if (sort === "power-asc") return Number(a.power) - Number(b.power) || a.name.localeCompare(b.name);
+      if (sort === "name") return a.name.localeCompare(b.name);
+      if (sort === "class") return a.class.localeCompare(b.class) || a.name.localeCompare(b.name);
+      const ta = teamMap.get(a.id) || Infinity, tb = teamMap.get(b.id) || Infinity;
+      return ta - tb || a.name.localeCompare(b.name);
     });
-    const unassignedCount = Math.max(0, totalMembers - assignedCount);
 
-    document.getElementById("stat-total-members").textContent = totalMembers.toLocaleString();
-    document.getElementById("stat-total-power").textContent = totalPower.toLocaleString();
-    document.getElementById("stat-avg-power").textContent = avgPower.toLocaleString();
-    document.getElementById("stat-unassigned").textContent = unassignedCount.toLocaleString();
-}
+    els.rosterBody.innerHTML = rows.map(m => {
+      const team = teamMap.get(m.id);
+      return `<tr>
+        <td><strong>${esc(m.name)}</strong>${m.notes ? `<div class="muted">${esc(m.notes)}</div>` : ""}</td>
+        <td><span class="badge">${esc(m.class)}</span></td>
+        <td>${fmtPower(m.power)}</td>
+        <td>${team ? `<span class="badge team-badge">Team ${team}</span>` : '<span class="muted">Unassigned</span>'}</td>
+        <td class="actions-cell" style="${master ? "" : "display:none"}"><div class="actions">
+          <button class="btn mini" data-edit="${m.id}">Edit</button>
+          <button class="btn mini danger" data-delete="${m.id}">Delete</button>
+        </div></td>
+      </tr>`;
+    }).join("");
+    els.emptyRoster.hidden = rows.length !== 0;
+  }
 
-// RENDER ROSTER ROWS
-function renderRosterTable() {
-    rosterTbody.innerHTML = "";
-    
-    let filtered = [...STATE.roster];
+  function renderTeams() {
+    els.noTeams.hidden = state.teams.length !== 0;
+    els.teams.innerHTML = state.teams.map(t => {
+      const players = (t.playerIds || []).map(id => state.members.find(m => m.id === id)).filter(Boolean);
+      const present = new Set(players.map(p => p.class));
+      const missing = CLASSES.filter(c => !present.has(c));
+      return `<article class="team-card">
+        <div class="team-top"><h3>Team ${t.number}</h3><span class="team-power">${fmtPower(players.reduce((s,p)=>s+Number(p.power),0))}</span></div>
+        <div class="team-meta"><span>${players.length}/4 players</span>${CLASSES.filter(c=>present.has(c)).map(c=>`<span class="badge">${c}</span>`).join("")}</div>
+        <ul class="players">${players.map(p => `<li><div class="player-main"><strong>${esc(p.name)}</strong><small>${esc(p.class)}</small></div><strong>${fmtPower(p.power)}</strong></li>`).join("")}</ul>
+        ${missing.length ? `<div class="missing">Missing: ${missing.join(", ")}</div>` : `<div class="all-present">All 4 classes present</div>`}
+      </article>`;
+    }).join("");
+  }
 
-    // Filter text name match
-    const searchVal = searchPlayer.value.trim().toLowerCase();
-    if (searchVal) {
-        filtered = filtered.filter(p => p.name.toLowerCase().includes(searchVal));
+  function esc(value) {
+    return String(value ?? "").replace(/[&<>"']/g, ch => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[ch]));
+  }
+
+  function openAdd() {
+    els.memberForm.reset(); els.memberId.value = "";
+    els.memberDialogTitle.textContent = "Add Member";
+    els.memberDialog.showModal();
+    els.memberName.focus();
+  }
+
+  function openEdit(id) {
+    const m = state.members.find(x => x.id === id);
+    if (!m) return;
+    els.memberId.value = m.id; els.memberName.value = m.name; els.memberClass.value = m.class;
+    els.memberPower.value = m.power; els.memberNotes.value = m.notes || "";
+    els.memberDialogTitle.textContent = "Edit Member";
+    els.memberDialog.showModal();
+  }
+
+  els.loginBtn.onclick = () => { els.loginError.hidden = true; els.loginForm.reset(); els.loginDialog.showModal(); els.username.focus(); };
+  els.logoutBtn.onclick = () => { master = false; sessionStorage.removeItem(SESSION_KEY); render(); };
+  els.addMemberBtn.onclick = openAdd;
+  els.generateBtn.onclick = () => {
+    state.teams = generateTeams(state.members);
+    saveState(); render();
+  };
+
+  els.loginForm.addEventListener("submit", e => {
+    e.preventDefault();
+    if (els.username.value === CREDENTIALS.username && els.password.value === CREDENTIALS.password) {
+      master = true; sessionStorage.setItem(SESSION_KEY, "true"); els.loginDialog.close(); render();
+    } else els.loginError.hidden = false;
+  });
+
+  els.memberForm.addEventListener("submit", e => {
+    e.preventDefault();
+    if (!master) return;
+    const name = els.memberName.value.trim(), cls = els.memberClass.value;
+    const power = Number(els.memberPower.value), notes = els.memberNotes.value.trim();
+    if (!name || !CLASSES.includes(cls) || !Number.isFinite(power) || power < 0) return;
+    const id = els.memberId.value;
+    if (id) {
+      const m = state.members.find(x => x.id === id);
+      if (m) Object.assign(m, { name, class: cls, power, notes });
+    } else state.members.push({ id: uid(), name, class: cls, power, notes });
+    state.teams = []; saveState(); els.memberDialog.close(); render();
+  });
+
+  els.rosterBody.addEventListener("click", e => {
+    const edit = e.target.closest("[data-edit]"), del = e.target.closest("[data-delete]");
+    if (edit) openEdit(edit.dataset.edit);
+    if (del) {
+      const m = state.members.find(x => x.id === del.dataset.delete);
+      if (!m) return;
+      pendingDeleteId = m.id; els.confirmText.textContent = `Delete "${m.name}" from the roster?`;
+      els.confirmDialog.showModal();
     }
+  });
 
-    // Filter class category match
-    const classVal = filterClass.value;
-    if (classVal) {
-        filtered = filtered.filter(p => p.class === classVal);
-    }
+  els.confirmDelete.onclick = e => {
+    e.preventDefault();
+    if (!master || !pendingDeleteId) return;
+    state.members = state.members.filter(m => m.id !== pendingDeleteId);
+    state.teams = state.teams.map(t => ({...t, playerIds: (t.playerIds || []).filter(id => id !== pendingDeleteId)})).filter(t => t.playerIds.length);
+    pendingDeleteId = null; saveState(); els.confirmDialog.close(); render();
+  };
 
-    // Process Sort Orders
-    const sortVal = sortRoster.value;
-    filtered.sort((a, b) => {
-        if (sortVal === "power-desc") return b.power - a.power;
-        if (sortVal === "power-asc") return a.power - b.power;
-        if (sortVal === "name-asc") return a.name.localeCompare(b.name);
-        if (sortVal === "class-asc") return a.class.localeCompare(b.class);
-        if (sortVal === "team-asc") {
-            const tA = getPlayerTeamNumber(a.id);
-            const tB = getPlayerTeamNumber(b.id);
-            return tA - tB;
-        }
-        return 0;
-    });
+  els.exportBtn.onclick = () => {
+    const payload = { format: "sword-x-staff-guild-planner", version: 4, exportedAt: new Date().toISOString(), members: state.members, teams: state.teams };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], {type:"application/json"});
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "sword-x-staff-roster.json"; a.click();
+    URL.revokeObjectURL(a.href);
+  };
 
-    if (filtered.length === 0) {
-        rosterTbody.innerHTML = `<tr><td colspan="${STATE.authMode === 'master' ? 5 : 4}" style="text-align: center; color: var(--text-secondary);">No characters match filter properties.</td></tr>`;
-        return;
-    }
+  els.importBtn.onclick = () => els.importFile.click();
+  els.importFile.onchange = async () => {
+    const file = els.importFile.files[0]; if (!file) return;
+    try {
+      const data = JSON.parse(await file.text());
+      if (!Array.isArray(data.members)) throw new Error("Invalid roster");
+      const members = data.members.map(m => ({
+        id: String(m.id || uid()), name: String(m.name || "").trim(), class: m.class,
+        power: Number(m.power), notes: String(m.notes || "")
+      })).filter(m => m.name && CLASSES.includes(m.class) && Number.isFinite(m.power) && m.power >= 0);
+      if (!confirm(`Import ${members.length} valid members? This replaces the current roster.`)) return;
+      state = { members, teams: [] }; saveState(); render();
+    } catch (_) { alert("Could not import this file. Please use a valid Guild Planner JSON export."); }
+    els.importFile.value = "";
+  };
 
-    filtered.forEach(p => {
-        const tr = document.createElement("tr");
-        
-        const teamNum = getPlayerTeamNumber(p.id);
-        const teamDisplay = teamNum > 0 ? `Team ${teamNum}` : `<span style="color: var(--text-secondary); italic">Unassigned</span>`;
-
-        let actionButtonsHtml = '';
-        if (STATE.authMode === 'master') {
-            actionButtonsHtml = `
-                <td class="auth-only">
-                    <div class="action-group">
-                        <button class="btn btn-secondary btn-xs btn-edit-member" data-id="${p.id}">Edit</button>
-                        <button class="btn btn-danger btn-xs btn-delete-member" data-id="${p.id}">Delete</button>
-                    </div>
-                </td>
-            `;
-        }
-
-        tr.innerHTML = `
-            <td><strong style="color: #fff">${escapeHtml(p.name)}</strong>${p.notes ? `<div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 2px;">${escapeHtml(p.notes)}</div>` : ''}</td>
-            <td><span class="badge badge-${p.class.toLowerCase()}">${p.class}</span></td>
-            <td><strong style="color: var(--color-success)">${p.power.toLocaleString()}</strong></td>
-            <td>${teamDisplay}</td>
-            ${actionButtonsHtml}
-        `;
-        rosterTbody.appendChild(tr);
-    });
-}
-
-// LOOKUP MAPPED ASSIGNED TEAM NUMBER
-function getPlayerTeamNumber(playerId) {
-    for (let i = 0; i < STATE.teams.length; i++) {
-        if (STATE.teams[i].players.some(pl => pl.id === playerId)) {
-            return STATE.teams[i].id;
-        }
-    }
-    return 0;
-}
-
-// RENDER BALANCED TEAM CARDS COLUMNS
-function renderTeamsGrid() {
-    teamsGrid.innerHTML = "";
-    
-    if (STATE.teams.length === 0) {
-        teamsGrid.innerHTML = `<div style="grid-column: 1/-1; text-align: center; padding: 3rem 1rem; color: var(--text-secondary); background-color: var(--bg-card); border-radius: 8px; border: 1px dashed var(--border-color)">No active groups processed yet. ${STATE.authMode === 'master' ? 'Click "Generate Ranked Teams" to build setups.' : 'Awaiting Master configuration execution.'}</div>`;
-        return;
-    }
-
-    STATE.teams.forEach(t => {
-        const card = document.createElement("div");
-        card.className = "team-card";
-        
-        let membersListHtml = "";
-        const classesList = ["Berserker", "Paladin", "Archmage", "Arcanist"];
-        
-        classesList.forEach(cls => {
-            const playerFound = t.players.find(p => p.class === cls);
-            if (playerFound) {
-                membersListHtml += `
-                    <div class="team-member-item">
-                        <div class="tm-identity">
-                            <span class="tm-name">${escapeHtml(playerFound.name)}</span>
-                            <span class="tm-cp-val">CP: ${playerFound.power.toLocaleString()}</span>
-                        </div>
-                        <span class="badge badge-${cls.toLowerCase()}">${cls}</span>
-                    </div>
-                `;
-            } else {
-                membersListHtml += `
-                    <div class="team-member-item" style="opacity: 0.65;">
-                        <div class="tm-identity">
-                            <span class="tm-name" style="color: var(--text-secondary); font-style: italic">Empty Composition Slot</span>
-                            <span class="tm-cp-val">--</span>
-                        </div>
-                        <span class="badge badge-missing">Missing ${cls}</span>
-                    </div>
-                `;
-            }
-        });
-
-        card.innerHTML = `
-            <div class="team-header">
-                <span class="team-title">Team ${t.id}</span>
-                <span class="team-cp">${t.totalPower.toLocaleString()} CP</span>
-            </div>
-            <div class="team-members-list">
-                ${membersListHtml}
-            </div>
-        `;
-        teamsGrid.appendChild(card);
-    });
-}
-
-// ALGORITHM FOR COMPETITIVE GROUP GENERATION
-function runTeamGenerationAlgorithm() {
-    // 1. Fragment by raw class buckets
-    const classes = { Berserker: [], Paladin: [], Archmage: [], Arcanist: [] };
-    STATE.roster.forEach(m => {
-        if (classes[m.class]) {
-            classes[m.class].push({ ...m });
-        }
-    });
-
-    // 2. Force Sort power hierarchy levels high to low descending
-    for (const cls in classes) {
-        classes[cls].sort((a, b) => b.power - a.power);
-    }
-
-    // 3. Iteratively loop down max possible slots (capped at exactly 15 teams maximum requirement)
-    const newTeams = [];
-    const maxTeamsCount = 15;
-
-    for (let teamIdx = 1; teamIdx <= maxTeamsCount; teamIdx++) {
-        const teamPlayers = [];
-        let teamTotalCP = 0;
-
-        // Check each designated game class container bucket
-        ["Berserker", "Paladin", "Archmage", "Arcanist"].forEach(cls => {
-            if (classes[cls].length > 0) {
-                const headPlayer = classes[cls].shift(); // Extract top power candidate
-                teamPlayers.push(headPlayer);
-                teamTotalCP += parseInt(headPlayer.power, 10);
-            }
-        });
-
-        // Break execution chain if zero players were appended across any class slots
-        if (teamPlayers.length === 0) break;
-
-        newTeams.push({
-            id: teamIdx,
-            players: teamPlayers,
-            totalPower: teamTotalCP
-        });
-    }
-
-    STATE.teams = newTeams;
-    saveTeamsToStorage();
-    renderAll();
-}
-
-// ATTACH CORE REGISTRATION HANDLERS
-function setupEventHandlers() {
-    
-    // OPEN PROMPTS TRIGGER MODS
-    btnLoginOpen.addEventListener("click", () => {
-        loginError.style.display = "none";
-        formLogin.reset();
-        openModal(modalLogin);
-    });
-
-    btnAddMemberOpen.addEventListener("click", () => {
-        formMember.reset();
-        document.getElementById("member-id").value = "";
-        memberModalTitle.textContent = "Add Guild Member";
-        document.getElementById("btn-member-submit").textContent = "Save Member";
-        openModal(modalMember);
-    });
-
-    // GENERAL DISMISS CONTROLS BOUND TO ATTRIBUTE CLICKS
-    document.querySelectorAll("[data-close]").forEach(btn => {
-        btn.addEventListener("click", () => {
-            closeAllModals();
-        });
-    });
-
-    // CLOSE VIA BACKDROP WRAPPER CONTAINER ONLY (NOT ITS INTERNALS)
-    modalContainer.addEventListener("click", (e) => {
-        if (e.target === modalContainer) {
-            closeAllModals();
-        }
-    });
-
-    // PROCESS MASTER IDENTITY CHECKS
-    formLogin.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const user = document.getElementById("login-user").value;
-        const pass = document.getElementById("login-pass").value;
-
-        if (user === "Mika" && pass === "EvilEnvy") {
-            setAuthMode("master");
-            closeAllModals();
-            renderAll(); // Rerender table layout grid elements to showcase action options
-        } else {
-            loginError.style.display = "block";
-        }
-    });
-
-    // SHUTDOWN AUTHORIZATION TRACK
-    btnLogout.addEventListener("click", () => {
-        setAuthMode("viewer");
-        renderAll();
-    });
-
-    // MEMBER FORM CRUD OPERATIONS SUBMIT ACTION
-    formMember.addEventListener("submit", (e) => {
-        e.preventDefault();
-        const id = document.getElementById("member-id").value;
-        const name = document.getElementById("member-name").value.trim();
-        const cls = document.getElementById("member-class").value;
-        const power = parseInt(document.getElementById("member-power").value, 10);
-        const notes = document.getElementById("member-notes").value.trim();
-
-        if (!name || isNaN(power)) return;
-
-        if (id) {
-            // Update operation
-            const idx = STATE.roster.findIndex(m => m.id === id);
-            if (idx !== -1) {
-                STATE.roster[idx] = { id, name, class: cls, power, notes };
-            }
-        } else {
-            // Generate unique stamp identifier token string
-            const newId = Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
-            STATE.roster.push({ id: newId, name, class: cls, power, notes });
-        }
-
-        saveRosterToStorage();
-        closeAllModals();
-        
-        // Auto-recalculate configuration mapping updates if teams existed
-        if (STATE.teams.length > 0) {
-            runTeamGenerationAlgorithm();
-        } else {
-            renderAll();
-        }
-    });
-
-    // INDIVIDUAL ELEMENT CLICKS VIA EMBEDDED TABLE TRIGGERS DELEGATION
-    rosterTbody.addEventListener("click", (e) => {
-        const editBtn = e.target.closest(".btn-edit-member");
-        const deleteBtn = e.target.closest(".btn-delete-member");
-
-        if (editBtn) {
-            const targetId = editBtn.getAttribute("data-id");
-            const player = STATE.roster.find(m => m.id === targetId);
-            if (player) {
-                document.getElementById("member-id").value = player.id;
-                document.getElementById("member-name").value = player.name;
-                document.getElementById("member-class").value = player.class;
-                document.getElementById("member-power").value = player.power;
-                document.getElementById("member-notes").value = player.notes || "";
-                
-                memberModalTitle.textContent = "Edit Guild Member";
-                document.getElementById("btn-member-submit").textContent = "Update Configurations";
-                openModal(modalMember);
-            }
-        }
-
-        if (deleteBtn) {
-            const targetId = deleteBtn.getAttribute("data-id");
-            const player = STATE.roster.find(m => m.id === targetId);
-            if (player && confirm(`Are you sure you want to remove player "${player.name}" from the planner roster list?`)) {
-                STATE.roster = STATE.roster.filter(m => m.id !== targetId);
-                saveRosterToStorage();
-                
-                if (STATE.teams.length > 0) {
-                    runTeamGenerationAlgorithm();
-                } else {
-                    renderAll();
-                }
-            }
-        }
-    });
-
-    // PROCESS ALGORITHM TRIGGER
-    btnGenerateTeams.addEventListener("click", () => {
-        runTeamGenerationAlgorithm();
-    });
-
-    // DRIFT FILTERS REAL-TIME UPDATE LISTENERS
-    searchPlayer.addEventListener("input", () => renderRosterTable());
-    filterClass.addEventListener("change", () => renderRosterTable());
-    sortRoster.addEventListener("change", () => renderRosterTable());
-
-    // FILE UTILITY ACTIONS EXPORT MATRIX DATA
-    btnExport.addEventListener("click", () => {
-        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(STATE.roster, null, 2));
-        const downloadAnchor = document.createElement("a");
-        downloadAnchor.setAttribute("href", dataStr);
-        downloadAnchor.setAttribute("download", "sword_x_staff_guild_roster.json");
-        document.body.appendChild(downloadAnchor);
-        downloadAnchor.click();
-        downloadAnchor.remove();
-    });
-
-    // LOAD EXTERNAL RAW TRANSFERS
-    btnImportTrigger.addEventListener("click", () => {
-        fileImportInput.click();
-    });
-
-    fileImportInput.addEventListener("change", (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const reader = new FileReader();
-        reader.onload = function(evt) {
-            try {
-                const parsed = JSON.parse(evt.target.result);
-                if (Array.isArray(parsed)) {
-                    // Quick validation sweep mapping properties checks
-                    const valid = parsed.every(item => item.name && item.class && typeof item.power !== "undefined");
-                    if (valid) {
-                        STATE.roster = parsed;
-                        saveRosterToStorage();
-                        STATE.teams = []; // Reset old mapping context to match fresh batch criteria rules
-                        saveTeamsToStorage();
-                        renderAll();
-                        alert("Guild roster profile uploaded and applied cleanly!");
-                    } else {
-                        alert("JSON contains unmapped data structures. Check layout fields compatibility matrices.");
-                    }
-                } else {
-                    alert("Import file payload invalid array context formatting data profile.");
-                }
-            } catch(err) {
-                alert("Critical failure parsing files: invalid raw parameters formatting JSON errors.");
-            }
-        };
-        reader.readAsText(file);
-        fileImportInput.value = ""; // Clear file selector node reference
-    });
-}
-
-// ESCAPE USER CHARACTER DATA TO PROTECT STRINGS INTERPOLATION EXPRESSION 
-function escapeHtml(str) {
-    if (!str) return '';
-    return str
-         .replace(/&/g, "&amp;")
-         .replace(/</g, "&lt;")
-         .replace(/>/g, "&gt;")
-         .replace(/"/g, "&quot;")
-         .replace(/'/g, "&#039;");
-}
-
-// INITIATE APP ON WINDOW REBOOT
-window.addEventListener("DOMContentLoaded", initializeApp);
+  document.querySelectorAll("[data-close]").forEach(btn => btn.onclick = () => $(btn.dataset.close).close());
+  [els.searchInput, els.classFilter, els.sortSelect].forEach(el => el.addEventListener("input", renderRoster));
+  render();
+})();
