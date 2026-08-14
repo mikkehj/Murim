@@ -1,33 +1,23 @@
-# Sword x Staff Guild Planner — v2
+# Sword x Staff - Guild Planner (v4)
 
-## What's new
+A simple, beautiful, completely static client-side web application layout designed to plan and organize ranked composition tiers for the **Sword x Staff** mobile application.
 
-- Team quality summary
-- Average team power
-- Power spread percentage
-- Class diversity warnings
-- Three automatic-build modes:
-  - Balanced power + classes
-  - Pure power balance
-  - Prioritize class diversity
-- Better team cards
-- Team cards highlight teams above/below the average
-- Drag and drop between teams
+## 🚀 Live Preview Setup on GitHub Pages
+Because this application contains **zero backend frameworks, databases, or third-party engines (like Firebase or Supabase)**, you can host it totally free in seconds:
+1. Extract the contents of this ZIP configuration file.
+2. Create a new repository on your GitHub account.
+3. Push these 4 core files directly to your main branch.
+4. Go to **Settings -> Pages**, choose the root of your main branch, and click **Save**.
 
-## Install on GitHub Pages
+## 🛠️ Design Architecture Decisions
+- **Data Persistence:** Automatically tracks state updates inside the local browser application memory layer (`localStorage`).
+- **Master Authorization:** Features a client-side hard-coded bypass gateway layout for rapid edits across alternative screens.
+  - **Username:** `Mika`
+  - **Password:** `EvilEnvy`
 
-1. Create a **public** GitHub repository, e.g. `sword-x-staff-guild`.
-2. Upload `index.html`, `styles.css`, and `app.js` to the repository root.
-3. Open **Settings → Pages**.
-4. Choose **Deploy from a branch**.
-5. Select **main** and **/(root)**.
-6. Save.
-7. Open the URL GitHub provides.
-
-## Data
-
-The app uses browser local storage. It does not currently have a shared cloud database. Use Export regularly to make a backup.
-
-## Next possible version
-
-A shared database/authentication system can be added later so the guild leader and members can all work with one shared roster.
+## 📊 Algorithmic Team Generation Flow
+The team arrangement engine uses a strict sequential hierarchy requested for game competitive brackets:
+1. Groups every single member by their primary core assigned class (`Berserker`, `Paladin`, `Archmage`, `Arcanist`).
+2. Sorts everyone dynamically from highest individual power index down to lowest.
+3. Packages `Team 1` sequentially with the absolute top tier metric performance from each of the 4 buckets.
+4. Seamlessly skips missing class brackets if alignment limits display unbalanced compositions. Maxes out cleanly at **15 teams**.
