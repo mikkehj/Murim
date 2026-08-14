@@ -121,15 +121,5 @@
 </dialog>
 
 <script src="app.js"></script>
-<script>
-  // Auto-load roster from GitHub as soon as the page is ready
-  document.addEventListener('DOMContentLoaded', () => {
-    const importBtn = document.getElementById('importBtn');
-    if (importBtn) {
-      // Small delay to ensure app.js has finished binding its event listeners
-      setTimeout(() => importBtn.click(), 50);
-    }
-  });
-</script>
 </body>
 </html>
