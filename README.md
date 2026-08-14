@@ -1,28 +1,22 @@
-# Sword x Staff - Guild Planner v4
+# Sword x Staff - Guild Planner (v4 Bundle)
 
-A fully responsive, serverless, static guild planning tool designed for the mobile game **Sword x Staff** and fully optimized for hosting via **GitHub Pages**.
+A responsive, completely static guild roster configuration dashboard planner web application customized specifically for the mobile gaming community of "Sword x Staff". Hostable completely free out-of-the-box via **GitHub Pages**.
 
-## 🚀 Features Built-In
-- **Zero Backend Footprint**: Fully client-side, powered entirely by a modern `localStorage` transaction engine pipeline and standard data schema structure templates.
-- **Dual Mode Access Matrix Architecture**:
-  - **Viewer Mode**: Anyone can access the page URL layout view to monitor stats, filtered roster lists, and the optimized active group distributions matrix.
-  - **Master Editor Mode**: Gain authorized administrative control over records parsing tools using standard master variables.
-- **Dynamic Team Composition Algorithm**: Automatically splits players by their game classes (`Berserker`, `Paladin`, `Archmage`, `Arcanist`), filters power attributes downward from highest to lowest metrics, and groups them dynamically into teams. 
-- **JSON Utility Pipeline Engine**: Backup, modify, restore, and transfer player record items instantly through structured external static files.
+## 🚀 Key Functional Architecture Included
+1. **Zero External Dependencies**: Entire project is pure HTML, modern CSS variables grid layouts, and clean secure native JavaScript. No databases, Firebase, or complex backend build systems required.
+2. **Deterministic Multi-Pass Team Sorting Engine**: Auto-groups the roster into four gaming classes (`Berserker`, `Paladin`, `Archmage`, `Arcanist`), filters from highest power descending, and links equivalent ranks together across up to 15 strict balance squads. Missing slots are highlighted dynamically with helpful visual warning markers.
+3. **Dual Permission Workspaces Layer**: Single page state controls layout shifts cleanly between read-only public **Viewer Mode** and administrative editor **Master Mode**.
+4. **Data I/O Utilities**: Save dataset records natively to local browser storage pipelines, or execute immediate custom JSON backup files imports/exports tasks.
 
-## 🔑 Administrative Access Credentials
-- **Master Username:** `Mika`
-- **Master Password:** `EvilEnvy`
+## 🔐 Administrative Verification Configuration
+To edit information or compute teams layouts configurations, activate Master Mode via the **Master Login** interface anchor action items headers using these hardcoded security checks:
+* **Username**: `Mika`
+* **Password**: `EvilEnvy`
 
-## 🛠️ GitHub Pages Implementation Guide
-1. Create a fresh public or private code repository inside your **GitHub profile dashboard panel**.
-2. Drag and drop the following unpacked core system static files directly into the repository root:
-   - `index.html`
-   - `styles.css`
-   - `app.js`
-3. Navigate to repository **Settings** -> **Pages** sub-panel section link area option.
-4. Set your deployment pipeline source selector option to execute from the root directory path (`/`) under the main deployment branch loop context.
-5. Save your settings. Your application URL target endpoint will go online within a minute!
-
----
-*Developed under version framework platform release metrics v4. Architecture strictly isolated from external dynamic SaaS integrations or microservice middleware layers.*
+## 📦 How to Publish instantly to GitHub Pages
+1. Create a new public or private repository on your GitHub account (e.g., named `sword-x-staff-planner`).
+2. Extract the four bundled files (`index.html`, `styles.css`, `app.js`, `README.md`) from this ZIP package directly into your local machine folder workspaces workspace.
+3. Commit and push these exact four asset layers straight into the root directory of your newly created repository.
+4. Navigate to your repository page inside your browser: **Settings** -> **Pages** menu column section.
+5. Under the "Build and deployment" configuration category, ensure the Source option says **Deploy from a branch** and select the `/root` path of your main/master branch, then hit **Save**.
+6. GitHub will build your site instantly! Your private custom link will appear at the top of that setup window ready for you to share directly with your guild crew.

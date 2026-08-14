@@ -3,154 +3,159 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sword x Staff - Guild Planner v4</title>
+    <title>Sword x Staff Guild Planner (v4)</title>
     <link rel="stylesheet" href="styles.css">
 </head>
-<body class="viewer-mode">
-    <!-- Header -->
+<body>
+    <!-- HEADER -->
     <header class="app-header">
         <div class="header-container">
             <div class="brand">
                 <h1>Sword x Staff</h1>
                 <span class="version-tag">v4</span>
             </div>
-            <div class="subtitle">Guild Planner</div>
             <div class="header-actions">
-                <button id="btn-login-trigger" class="btn btn-primary">Master Login</button>
-                <button id="btn-logout" class="btn btn-danger hidden">Logout</button>
-                <button id="btn-export" class="btn btn-secondary">Export JSON</button>
-                <button id="btn-import-trigger" class="btn btn-secondary hidden">Import JSON</button>
-                <input type="file" id="file-import" accept=".json" class="hidden">
+                <button id="btn-login-open" class="btn btn-primary mode-viewer-only">Master Login</button>
+                <button id="btn-add-member" class="btn btn-success mode-master-only" style="display: none;">+ Add Member</button>
+                <button id="btn-export" class="btn id-btn-neutral">Export JSON</button>
+                <button id="btn-import-trigger" class="btn id-btn-neutral mode-master-only" style="display: none;">Import JSON</button>
+                <input type="file" id="file-import" accept=".json" style="display: none;">
+                <button id="btn-logout" class="btn btn-danger mode-master-only" style="display: none;">Logout</button>
             </div>
         </div>
     </header>
 
-    <!-- State Banner -->
-    <div id="status-banner" class="status-banner viewer-bg">
-        <span id="status-text">Viewing Mode (Read-Only)</span>
-    </div>
-
+    <!-- MAIN CONTAINER -->
     <main class="main-container">
-        <!-- Dashboard Statistics -->
+        <!-- STATUS BANNER -->
+        <div id="status-banner" class="status-banner banner-viewer">
+            <span id="status-text">🌐 Current Mode: <strong>Viewer Mode</strong> (Read-Only)</span>
+        </div>
+
+        <!-- STATS DASHBOARD -->
         <section class="stats-section">
             <div class="stats-grid">
                 <div class="stat-card">
-                    <div class="stat-label">Total Members</div>
-                    <div id="stat-count" class="stat-value">0</div>
+                    <h3>Total Members</h3>
+                    <p id="stat-count">0</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Total Power</div>
-                    <div id="stat-total-power" class="stat-value">0</div>
+                    <h3>Total Power</h3>
+                    <p id="stat-power">0</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Average Power</div>
-                    <div id="stat-avg-power" class="stat-value">0</div>
+                    <h3>Average Power</h3>
+                    <p id="stat-avg">0</p>
                 </div>
                 <div class="stat-card">
-                    <div class="stat-label">Unassigned Players</div>
-                    <div id="stat-unassigned" class="stat-value">0</div>
+                    <h3>Unassigned Players</h3>
+                    <p id="stat-unassigned">0</p>
                 </div>
             </div>
         </section>
 
-        <!-- Management Controls & Roster -->
-        <section class="roster-section">
-            <div class="section-header">
-                <h2>Guild Roster</h2>
-                <button id="btn-add-member" class="btn btn-success hidden">+ Add Member</button>
-            </div>
+        <!-- CONTROLS & FILTERING -->
+        <section class="controls-section">
+            <div class="controls-wrapper">
+                <input type="text" id="search-input" placeholder="Search player name...">
+                
+                <select id="filter-class">
+                    <option value="">All Classes</option>
+                    <option value="Berserker">Berserker</option>
+                    <option value="Paladin">Paladin</option>
+                    <option value="Archmage">Archmage</option>
+                    <option value="Arcanist">Arcanist</option>
+                </select>
 
-            <!-- Filters -->
-            <div class="filter-bar">
-                <div class="filter-group search-group">
-                    <input type="text" id="search-player" placeholder="Search player name...">
-                </div>
-                <div class="filter-group">
-                    <select id="filter-class">
-                        <option value="">All Classes</option>
-                        <option value="Berserker">Berserker</option>
-                        <option value="Paladin">Paladin</option>
-                        <option value="Archmage">Archmage</option>
-                        <option value="Arcanist">Arcanist</option>
-                    </select>
-                </div>
-                <div class="filter-group">
-                    <select id="sort-roster">
-                        <option value="power-desc">Power: High → Low</option>
-                        <option value="power-asc">Power: Low → High</option>
-                        <option value="name-asc">Name: A → Z</option>
-                        <option value="class-asc">Class: A → Z</option>
-                        <option value="team-asc">Team: Low → High</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Roster Table Container -->
-            <div class="table-container">
-                <table class="roster-table">
-                    <thead>
-                        <tr>
-                            <th>Player Name</th>
-                            <th>Class</th>
-                            <th>Power</th>
-                            <th>Assigned Team</th>
-                            <th class="actions-head hidden">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="roster-tbody">
-                        <!-- Dynamic content -->
-                    </tbody>
-                </table>
+                <select id="sort-select">
+                    <option value="power-desc">Power: High → Low</option>
+                    <option value="power-asc">Power: Low → High</option>
+                    <option value="name-asc">Name: A-Z</option>
+                    <option value="class-asc">Class: A-Z</option>
+                    <option value="team-asc">Team Number</option>
+                </select>
+                
+                <button id="btn-generate-teams" class="btn btn-accent mode-master-only" style="display: none;">⚙️ Generate Ranked Teams</button>
             </div>
         </section>
 
-        <!-- Team Builder Section -->
-        <section class="team-section">
-            <div class="section-header">
-                <h2>Ranked Strategic Teams</h2>
-                <button id="btn-generate-teams" class="btn btn-primary hidden">Generate Ranked Teams</button>
-            </div>
-            <div id="teams-grid" class="teams-grid">
-                <!-- Dynamic team cards -->
-            </div>
-        </section>
+        <!-- TWO COLUMN WORKSPACE -->
+        <div class="workspace-grid">
+            <!-- ROSTER COLUMN -->
+            <section class="roster-column">
+                <div class="section-title-bar">
+                    <h2>Guild Roster</h2>
+                </div>
+                <div class="table-responsive">
+                    <table class="roster-table">
+                        <thead>
+                            <tr>
+                                <th>Player Name</th>
+                                <th>Class</th>
+                                <th>Power</th>
+                                <th>Assigned Team</th>
+                                <th class="mode-master-only" style="display: none;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="roster-tbody">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- TEAMS COLUMN -->
+            <section class="teams-column">
+                <div class="section-title-bar">
+                    <h2>Ranked Teams (Max 15)</h2>
+                </div>
+                <div id="teams-grid" class="teams-grid">
+                    <!-- Dynamic Content -->
+                </div>
+            </section>
+        </div>
     </main>
 
-    <!-- Modal Login Form -->
-    <div id="modal-login" class="modal-backdrop hidden">
-        <div class="modal-box">
-            <h3>Master Access Login</h3>
-            <p class="modal-hint">Enter credentials to unlock administrative controls.</p>
+    <!-- MODAL: LOGIN -->
+    <div id="modal-login" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Master Authorization</h2>
+                <span class="modal-close" id="modal-login-close">&times;</span>
+            </div>
             <form id="form-login">
-                <div class="form-field">
-                    <label for="login-username">Username</label>
-                    <input type="text" id="login-username" required autocomplete="username">
+                <div class="form-group">
+                    <label for="login-user">Username</label>
+                    <input type="text" id="login-user" required autocomplete="username">
                 </div>
-                <div class="form-field">
-                    <label for="login-password">Password</label>
-                    <input type="password" id="login-password" required autocomplete="current-password">
+                <div class="form-group">
+                    <label for="login-pass">Password</label>
+                    <input type="password" id="login-pass" required autocomplete="current-password">
                 </div>
-                <div id="login-error" class="error-msg hidden">Invalid credentials. Please try again.</div>
+                <div id="login-error" class="error-msg" style="display: none;">Invalid credentials! Please try again.</div>
                 <div class="modal-actions">
-                    <button type="button" id="btn-close-login" class="btn btn-secondary">Cancel</button>
+                    <button type="button" class="btn id-btn-neutral" id="btn-login-cancel">Cancel</button>
                     <button type="submit" class="btn btn-primary">Login</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Add/Edit Member -->
-    <div id="modal-member" class="modal-backdrop hidden">
-        <div class="modal-box">
-            <h3 id="member-modal-title">Add Guild Member</h3>
+    <!-- MODAL: MEMBER CRUD -->
+    <div id="modal-member" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modal-member-title">Add Guild Member</h2>
+                <span class="modal-close" id="modal-member-close">&times;</span>
+            </div>
             <form id="form-member">
                 <input type="hidden" id="member-id">
-                <div class="form-field">
+                <div class="form-group">
                     <label for="member-name">Player Name</label>
-                    <input type="text" id="member-name" required>
+                    <input type="text" id="member-name" required placeholder="e.g. Artorias">
                 </div>
-                <div class="form-field">
-                    <label for="member-class">Class</label>
+                <div class="form-group">
+                    <label for="member-class">Class Slot</label>
                     <select id="member-class" required>
                         <option value="Berserker">Berserker</option>
                         <option value="Paladin">Paladin</option>
@@ -158,24 +163,22 @@
                         <option value="Arcanist">Arcanist</option>
                     </select>
                 </div>
-                <div class="form-field">
+                <div class="form-group">
                     <label for="member-power">Combat Power (CP)</label>
-                    <input type="number" id="member-power" min="0" required>
+                    <input type="number" id="member-power" required min="0" placeholder="e.g. 1500000">
                 </div>
-                <div class="form-field">
-                    <label for="member-notes">Notes (Optional)</label>
-                    <textarea id="member-notes" rows="2"></textarea>
+                <div class="form-group">
+                    <label for="member-notes">Strategic Notes (Optional)</label>
+                    <textarea id="member-notes" rows="3" placeholder="e.g. Active in Guild Wars, backup caller"></textarea>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" id="btn-close-member" class="btn btn-secondary">Cancel</button>
-                    <button type="submit" id="btn-save-member" class="btn btn-success">Save Player</button>
+                    <button type="button" class="btn id-btn-neutral" id="btn-member-cancel">Cancel</button>
+                    <button type="submit" class="btn btn-success" id="btn-member-submit">Save Member</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <footer class="app-footer">
-        <p>Sword x Staff Guild Planner — Static System Running via GitHub Pages.</p>
-    </footer>
+    <script src="app.js"></script>
 </body>
 </html>
