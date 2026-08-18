@@ -1,7 +1,7 @@
 {
   "format": "sword-x-staff-guild-planner",
   "version": 4,
-  "exportedAt": "2026-08-18T09:56:33.913Z",
+  "exportedAt": "2026-08-18T10:13:45.089Z",
   "members": [
     {
       "id": "003f9d05-a3cd-441f-a3d1-2586c352c40e",
@@ -238,7 +238,7 @@
       "id": "6304b937-6d0e-48ce-815d-66efeb2c72be",
       "name": "Slothan",
       "class": "Archmage",
-      "power": 11400000,
+      "power": 1140000,
       "notes": ""
     },
     {
@@ -382,124 +382,5 @@
       "notes": ""
     }
   ],
-  "teams": [
-    {
-      "number": 1,
-      "playerIds": [
-        "003f9d05-a3cd-441f-a3d1-2586c352c40e",
-        "b6e20d34-d1c0-4c29-8a69-232db612bccd",
-        "a49924f5-f9ba-4688-8685-cf15878afe1d",
-        "d72288e9-6654-4afc-a569-45e3173beb37"
-      ]
-    },
-    {
-      "number": 2,
-      "playerIds": [
-        "df331f06-70fb-4ce8-a6ee-c9752002b617",
-        "837b2746-a20b-4036-bfa6-fdb151526746",
-        "478860d0-8565-4780-b624-5b7b48fee7d4",
-        "67cc8358-42cc-4449-851f-5c4deced8ab0"
-      ]
-    },
-    {
-      "number": 3,
-      "playerIds": [
-        "696225cc-a486-4d77-82dd-ff1d495ae80e",
-        "7e3e0b13-d0ad-4ccd-9100-9cd5bafc7de2",
-        "a68a4406-2157-42ae-8fd0-e3390a44641f",
-        "5675c829-b137-44c7-9b01-2464167dc4ed"
-      ]
-    },
-    {
-      "number": 4,
-      "playerIds": [
-        "da533427-c3c7-4cf9-83d5-8a24b4dd3030",
-        "54a949a8-43aa-4214-a1a9-c84e8098af32",
-        "a2a8a890-2a34-4050-8cd5-f2f04dc96144",
-        "d2aafa36-bd9f-44d1-8adb-8bb4f5582035"
-      ]
-    },
-    {
-      "number": 5,
-      "playerIds": [
-        "00a61a95-c6f7-43ef-9e2e-9c71ea9019e3",
-        "f369313c-b652-4e7a-9829-d7b32482af14",
-        "2b23d5ba-a6a1-41c3-b9e4-e7416202ea20",
-        "dedf1b41-c9d4-478b-9a9d-a1b2312f51ef"
-      ]
-    },
-    {
-      "number": 6,
-      "playerIds": [
-        "880d6366-c7ec-4100-aa77-ed28fb6b8101",
-        "13055582-3954-4a3e-abf6-fa5aa2fd317d",
-        "962946d3-de6c-4487-b0c5-d994a05b210a",
-        "1ae1b440-7f40-4a39-8b27-239db726169c"
-      ]
-    },
-    {
-      "number": 7,
-      "playerIds": [
-        "d16da848-64a5-4d9e-8c16-39d2398dec7f",
-        "c0b3a309-8fdc-4d70-b399-52a534af7771",
-        "717e74e1-aa72-4c2c-8bad-d2f731c49a3a"
-      ]
-    },
-    {
-      "number": 8,
-      "playerIds": [
-        "e660fd4d-68ee-4202-9d85-3bcef1b51fa2",
-        "92fb0508-11bd-4c57-9535-bc9c82f3f032"
-      ]
-    },
-    {
-      "number": 9,
-      "playerIds": [
-        "46bc3a79-5dce-4492-897f-6be79510304d",
-        "6304b937-6d0e-48ce-815d-66efeb2c72be"
-      ]
-    },
-    {
-      "number": 10,
-      "playerIds": [
-        "443b4d87-30d6-4164-9570-98d26107502b",
-        "c37f8c05-d22e-4d12-b179-d0e5b7d5f1f6"
-      ]
-    },
-    {
-      "number": 11,
-      "playerIds": [
-        "eced1f9a-ccdc-4f0b-89e7-e10d8fee49c6",
-        "a235e649-ac5c-422e-a251-302528f17f31"
-      ]
-    },
-    {
-      "number": 12,
-      "playerIds": [
-        "5752b9da-a1e8-48e7-a08e-acd2e4476b06",
-        "6e1d2332-f1ac-4f81-9012-46769aec212a"
-      ]
-    },
-    {
-      "number": 13,
-      "playerIds": [
-        "f99d9d8f-f8a3-413c-8d4d-f74e21bc3e6e",
-        "4b504d58-002f-4fdc-931d-f79dcca59e89"
-      ]
-    },
-    {
-      "number": 14,
-      "playerIds": [
-        "1f249b42-071d-466a-8391-bbebaec50a46",
-        "235e18e2-88ba-4c12-bb29-2f23396d3294"
-      ]
-    },
-    {
-      "number": 15,
-      "playerIds": [
-        "d773ace8-9e1b-41e0-86e6-55e7bdcd46a7",
-        "718dd7d1-48cc-4d77-9039-c1cff4e8894d"
-      ]
-    }
-  ]
+  "teams": []
 }
