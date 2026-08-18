@@ -3,123 +3,185 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Sword x Staff — Guild Planner</title>
+  <meta name="theme-color" content="#0b0f16">
+  <title>Sword x Staff — Murim Guild</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
-  <div>
-    <h1>Sword x Staff</h1>
-    <div class="sub">Guild Planner <span>v4</span></div>
-  </div>
-  <nav>
-    <button id="loginBtn" class="primary">Master Login</button>
-    <button id="logoutBtn" hidden>Logout</button>
-    <button id="exportBtn" hidden>Export</button>
-    <button id="importBtn">Load from GitHub</button>
-  </nav>
-</header>
+  <div class="page-glow glow-one"></div>
+  <div class="page-glow glow-two"></div>
 
-<main>
-  <div id="status" class="status">Viewer mode — roster and teams are read-only.</div>
-
-  <section class="stats">
-    <div><small>Members</small><b id="memberCount">0</b></div>
-    <div><small>Total power</small><b id="totalPower">0</b></div>
-    <div><small>Average power</small><b id="averagePower">0</b></div>
-    <div><small>Unassigned</small><b id="unassigned">0</b></div>
-  </section>
-
-  <section class="panel">
-    <div class="head">
+  <header class="site-header">
+    <div class="brand">
+      <div class="brand-mark">⚔</div>
       <div>
-        <h2>Guild Roster</h2>
-        <p>Manage members and inspect team assignments.</p>
+        <div class="eyebrow">SWORD × STAFF</div>
+        <h1>Murim</h1>
+        <div class="sub">Guild Headquarters <span>v4</span></div>
       </div>
-      <button id="addBtn" class="primary" hidden>Add Member</button>
     </div>
-    <div class="filters">
-      <input id="search" placeholder="Search player…">
-      <select id="classFilter">
-        <option value="">All classes</option>
-        <option>Berserker</option>
-        <option>Paladin</option>
-        <option>Archmage</option>
-        <option>Arcanist</option>
-      </select>
-      <select id="sort">
-        <option value="pd">Power: high → low</option>
-        <option value="pa">Power: low → high</option>
-        <option value="name">Name</option>
-        <option value="class">Class</option>
-        <option value="team">Team</option>
-      </select>
-    </div>
-    <div class="tablewrap">
-      <table>
-        <thead>
-          <tr>
-            <th>Player</th>
-            <th>Class</th>
-            <th>Power</th>
-            <th>Team</th>
-            <th class="actions-head">Actions</th>
-          </tr>
-        </thead>
-        <tbody id="roster"></tbody>
-      </table>
-    </div>
-    <div id="empty" class="empty" hidden>No guild members match the current filters.</div>
-  </section>
 
-  <section class="panel">
-    <div class="head">
-      <div>
-        <h2>Team Builder</h2>
-        <p>Strongest player of each class forms Team 1, then second-strongest forms Team 2, etc.</p>
+    <nav class="top-actions">
+      <button id="loginBtn" class="primary">Master Login</button>
+      <button id="logoutBtn" hidden>Logout</button>
+      <button id="exportBtn" hidden>Export</button>
+      <button id="importBtn" class="ghost">↻ Load from GitHub</button>
+    </nav>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-copy">
+        <div class="hero-kicker">☯ GUILD COMMAND CENTER</div>
+        <h2>Know your strength.<br><em>Build your team.</em></h2>
+        <p>Track the guild roster, compare power and quickly assemble balanced ranked teams.</p>
       </div>
-      <button id="generate" class="primary" hidden>Generate Ranked Teams</button>
-    </div>
-    <div id="teams" class="teams"></div>
-    <div id="noTeams" class="empty">No teams generated yet.</div>
-  </section>
-</main>
+      <div class="hero-seal" aria-hidden="true">
+        <span>武</span>
+        <small>MURIM</small>
+      </div>
+    </section>
 
-<dialog id="login">
-  <form id="loginForm" class="dialog">
-    <button type="button" class="x" data-close="login">×</button>
-    <h2>Master Login</h2>
-    <label>Username<input id="user" required autocomplete="username"></label>
-    <label>Password<input id="pass" type="password" required autocomplete="current-password"></label>
-    <p id="loginError" class="error" hidden>Invalid username or password.</p>
-    <button class="primary" type="submit">Login</button>
-  </form>
-</dialog>
+    <div id="status" class="status">Viewer mode — roster and teams are read-only.</div>
 
-<dialog id="memberDialog">
-  <form id="memberForm" class="dialog">
-    <button type="button" class="x" data-close="memberDialog">×</button>
-    <h2 id="memberTitle">Add Member</h2>
-    <input id="memberId" type="hidden">
-    <label>Name<input id="memberName" maxlength="80" required></label>
-    <label>Class
-      <select id="memberClass" required>
-        <option value="">Choose class…</option>
-        <option>Berserker</option>
-        <option>Paladin</option>
-        <option>Archmage</option>
-        <option>Arcanist</option>
-      </select>
-    </label>
-    <label>Power<input id="memberPower" type="number" min="0" step="1" required></label>
-    <label>Notes <small>(optional)</small><textarea id="memberNotes" maxlength="500"></textarea></label>
-    <div class="dialog-actions">
-      <button type="button" data-close="memberDialog">Cancel</button>
-      <button class="primary" type="submit">Save Member</button>
-    </div>
-  </form>
-</dialog>
+    <section class="stats">
+      <div class="stat-card">
+        <div class="stat-icon">♟</div>
+        <div><small>Members</small><b id="memberCount">0</b><span>Guild roster</span></div>
+      </div>
+      <div class="stat-card power-card">
+        <div class="stat-icon">✦</div>
+        <div><small>Total Power</small><b id="totalPower">0</b><span>Combined strength</span></div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon">◈</div>
+        <div><small>Average Power</small><b id="averagePower">0</b><span>Per member</span></div>
+      </div>
+      <div class="stat-card warning-card">
+        <div class="stat-icon">!</div>
+        <div><small>Unassigned</small><b id="unassigned">0</b><span>Not in a team</span></div>
+      </div>
+    </section>
 
-<script src="app.js"></script>
+    <section class="panel roster-panel">
+      <div class="panel-top">
+        <div>
+          <div class="section-kicker">GUILD DIRECTORY</div>
+          <h2>Guild Roster</h2>
+          <p>Browse every warrior, their class, power and current team.</p>
+        </div>
+        <button id="addBtn" class="primary add-member" hidden>＋ Add Member</button>
+      </div>
+
+      <div class="class-legend">
+        <span class="legend-title">Classes</span>
+        <span class="class-pill berserker"><i></i>Berserker</span>
+        <span class="class-pill paladin"><i></i>Paladin</span>
+        <span class="class-pill archmage"><i></i>Archmage</span>
+        <span class="class-pill arcanist"><i></i>Arcanist</span>
+      </div>
+
+      <div class="filters">
+        <label class="search-box">
+          <span>⌕</span>
+          <input id="search" placeholder="Search player…" aria-label="Search player">
+        </label>
+        <select id="classFilter" aria-label="Filter by class">
+          <option value="">All classes</option>
+          <option>Berserker</option>
+          <option>Paladin</option>
+          <option>Archmage</option>
+          <option>Arcanist</option>
+        </select>
+        <select id="sort" aria-label="Sort roster">
+          <option value="pd">Power: high → low</option>
+          <option value="pa">Power: low → high</option>
+          <option value="name">Name</option>
+          <option value="class">Class</option>
+          <option value="team">Team</option>
+        </select>
+      </div>
+
+      <div class="tablewrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Player</th>
+              <th>Class</th>
+              <th>Power</th>
+              <th>Team</th>
+              <th class="actions-head">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="roster"></tbody>
+        </table>
+      </div>
+      <div id="empty" class="empty" hidden>No guild members match the current filters.</div>
+    </section>
+
+    <section class="panel teams-panel">
+      <div class="panel-top">
+        <div>
+          <div class="section-kicker">FORMATION</div>
+          <h2>Team Builder</h2>
+          <p>Each team takes the strongest available player from every class.</p>
+        </div>
+        <button id="generate" class="primary" hidden>✦ Generate Ranked Teams</button>
+      </div>
+
+      <div class="formation-note">
+        <span>FORMATION RULE</span>
+        Strongest → weakest by class. Teams are generated automatically from the current roster.
+      </div>
+
+      <div id="teams" class="teams"></div>
+      <div id="noTeams" class="empty">No teams generated yet.</div>
+    </section>
+  </main>
+
+  <footer>
+    <span>⚔ Murim Guild Headquarters</span>
+    <span>Sword × Staff</span>
+  </footer>
+
+  <dialog id="login">
+    <form id="loginForm" class="dialog">
+      <button type="button" class="x" data-close="login">×</button>
+      <div class="dialog-kicker">GUILD MASTER</div>
+      <h2>Master Login</h2>
+      <p class="dialog-sub">Enter your credentials to manage the guild.</p>
+      <label>Username<input id="user" required autocomplete="username"></label>
+      <label>Password<input id="pass" type="password" required autocomplete="current-password"></label>
+      <p id="loginError" class="error" hidden>Invalid username or password.</p>
+      <button class="primary login-submit" type="submit">Enter Headquarters</button>
+    </form>
+  </dialog>
+
+  <dialog id="memberDialog">
+    <form id="memberForm" class="dialog">
+      <button type="button" class="x" data-close="memberDialog">×</button>
+      <div class="dialog-kicker">GUILD ROSTER</div>
+      <h2 id="memberTitle">Add Member</h2>
+      <input id="memberId" type="hidden">
+      <label>Name<input id="memberName" maxlength="80" required></label>
+      <label>Class
+        <select id="memberClass" required>
+          <option value="">Choose class…</option>
+          <option>Berserker</option>
+          <option>Paladin</option>
+          <option>Archmage</option>
+          <option>Arcanist</option>
+        </select>
+      </label>
+      <label>Power<input id="memberPower" type="number" min="0" step="1" required></label>
+      <label>Notes <small>(optional)</small><textarea id="memberNotes" maxlength="500"></textarea></label>
+      <div class="dialog-actions">
+        <button type="button" data-close="memberDialog">Cancel</button>
+        <button class="primary" type="submit">Save Member</button>
+      </div>
+    </form>
+  </dialog>
+
+  <script src="app.js"></script>
 </body>
 </html>
