@@ -1,377 +1,348 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>Sword × Staff Screenshot Import Test</title>
+<title>Sword × Staff Screenshot Importer</title>
 
-    <!--
-        Tesseract.js
-        OCR runs in the user's browser.
-        Nothing is uploaded to our own server.
-    -->
-    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
 
-        body {
-            margin: 0;
-            padding: 20px;
-            background: #15171c;
-            color: #f1f1f1;
-            font-family: Arial, sans-serif;
-        }
+* {
+    box-sizing: border-box;
+}
 
-        .container {
-            max-width: 1000px;
-            margin: auto;
-        }
+body {
+    margin: 0;
+    padding: 20px;
+    background: #15171c;
+    color: #eee;
+    font-family: Arial, sans-serif;
+}
 
-        h1 {
-            margin-top: 0;
-            font-size: 28px;
-        }
+.container {
+    max-width: 1100px;
+    margin: auto;
+}
 
-        .subtitle {
-            color: #aaa;
-            margin-bottom: 25px;
-        }
+h1 {
+    margin-top: 0;
+}
 
-        .panel {
-            background: #20232a;
-            border: 1px solid #3a3e48;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 20px;
-        }
+.subtitle {
+    color: #aaa;
+    margin-bottom: 25px;
+}
 
-        .upload-area {
-            border: 2px dashed #555;
-            border-radius: 12px;
-            padding: 30px;
-            text-align: center;
-            cursor: pointer;
-            transition: 0.2s;
-        }
+.panel {
+    background: #20232a;
+    border: 1px solid #3b3f48;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
 
-        .upload-area:hover {
-            border-color: #aaa;
-            background: #282c34;
-        }
+.upload {
+    border: 2px dashed #555;
+    border-radius: 12px;
+    padding: 35px;
+    text-align: center;
+    cursor: pointer;
+}
 
-        .upload-area input {
-            display: none;
-        }
+.upload:hover {
+    background: #292d35;
+}
 
-        .upload-title {
-            font-size: 20px;
-            margin-bottom: 10px;
-        }
+.upload input {
+    display: none;
+}
 
-        .upload-description {
-            color: #aaa;
-        }
+button {
+    background: #5865f2;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 11px 18px;
+    font-size: 15px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        button {
-            border: none;
-            border-radius: 8px;
-            padding: 11px 18px;
-            font-size: 15px;
-            cursor: pointer;
-            background: #5865f2;
-            color: white;
-            font-weight: bold;
-        }
+button:hover {
+    opacity: .9;
+}
 
-        button:hover {
-            opacity: 0.9;
-        }
+button:disabled {
+    opacity: .4;
+    cursor: not-allowed;
+}
 
-        button:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
+.secondary {
+    background: #444952;
+}
 
-        .secondary {
-            background: #444952;
-        }
+.success {
+    background: #287d45;
+}
 
-        .success {
-            background: #287d45;
-        }
+.warning {
+    background: #986d20;
+}
 
-        .danger {
-            background: #8d3030;
-        }
+.status {
+    background: #17191e;
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 15px;
+    white-space: pre-line;
+}
 
-        .status {
-            margin-top: 20px;
-            padding: 15px;
-            border-radius: 8px;
-            background: #17191e;
-            color: #ccc;
-            white-space: pre-line;
-        }
+.progress {
+    margin-top: 12px;
+    height: 10px;
+    background: #111;
+    border-radius: 10px;
+    overflow: hidden;
+}
 
-        .progress {
-            width: 100%;
-            height: 10px;
-            background: #111;
-            border-radius: 10px;
-            overflow: hidden;
-            margin-top: 10px;
-        }
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: #5865f2;
+    transition: width .2s;
+}
 
-        .progress-bar {
-            width: 0%;
-            height: 100%;
-            background: #5865f2;
-            transition: width 0.2s;
-        }
+.file {
+    padding: 8px 10px;
+    margin-top: 5px;
+    background: #292c33;
+    border-radius: 6px;
+}
 
-        .file-list {
-            margin-top: 15px;
-        }
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
 
-        .file-item {
-            padding: 8px 10px;
-            background: #292c33;
-            border-radius: 6px;
-            margin-bottom: 5px;
-            color: #ccc;
-        }
+th,
+td {
+    padding: 10px;
+    border-bottom: 1px solid #383c45;
+    text-align: left;
+}
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-        }
+th {
+    color: #aaa;
+    font-size: 12px;
+}
 
-        th,
-        td {
-            text-align: left;
-            padding: 10px;
-            border-bottom: 1px solid #383c45;
-        }
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+}
 
-        th {
-            color: #aaa;
-            font-size: 13px;
-            text-transform: uppercase;
-        }
+.berserker {
+    background: #7d2929;
+}
 
-        td {
-            font-size: 15px;
-        }
+.arcanist {
+    background: #26735a;
+}
 
-        .class-badge {
-            display: inline-block;
-            padding: 4px 8px;
-            border-radius: 6px;
-            font-size: 12px;
-            font-weight: bold;
-        }
+.paladin {
+    background: #a86b16;
+}
 
-        .berserker {
-            background: #7d2929;
-        }
+.archmage {
+    background: #315d9c;
+}
 
-        .arcanist {
-            background: #26735a;
-        }
+.unknown {
+    background: #555;
+}
 
-        .paladin {
-            background: #a86b16;
-        }
+.good {
+    color: #72e5a0;
+}
 
-        .archmage {
-            background: #315d9c;
-        }
+.warn {
+    color: #ffd166;
+}
 
-        .warning {
-            color: #ffcc66;
-        }
+.bad {
+    color: #ff7777;
+}
 
-        .error {
-            color: #ff7777;
-        }
+.small {
+    color: #999;
+    font-size: 13px;
+}
 
-        .good {
-            color: #73e6a1;
-        }
+.match {
+    color: #72e5a0;
+}
 
-        .button-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-            margin-top: 15px;
-        }
+.new-player {
+    color: #ffd166;
+}
 
-        .small {
-            font-size: 13px;
-            color: #999;
-        }
+.button-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 15px;
+}
 
-        .debug-image {
-            max-width: 100%;
-            border-radius: 8px;
-            margin-top: 10px;
-        }
-
-        @media (max-width: 600px) {
-            body {
-                padding: 10px;
-            }
-
-            th,
-            td {
-                padding: 7px 4px;
-                font-size: 13px;
-            }
-        }
-    </style>
+</style>
 </head>
 
 <body>
 
 <div class="container">
 
-    <h1>⚔️ Sword × Staff Screenshot Import</h1>
+<h1>⚔️ Sword × Staff Guild Screenshot Importer</h1>
 
-    <div class="subtitle">
-        Experimental roster scanner — this page does not modify your guild roster.
-    </div>
-
-    <!-- ========================================================= -->
-    <!-- UPLOAD -->
-    <!-- ========================================================= -->
-
-    <div class="panel">
-
-        <div
-            class="upload-area"
-            onclick="document.getElementById('screenshotInput').click()"
-        >
-
-            <div class="upload-title">
-                📸 Select Guildmate Screenshots
-            </div>
-
-            <div class="upload-description">
-                Select all screenshots covering your guild roster.
-                <br>
-                Each screenshot should contain 10 complete players.
-            </div>
-
-            <input
-                id="screenshotInput"
-                type="file"
-                accept="image/*"
-                multiple
-            >
-
-        </div>
-
-        <div id="fileList" class="file-list"></div>
-
-        <div class="button-row">
-
-            <button
-                id="analyzeButton"
-                onclick="analyzeScreenshots()"
-                disabled
-            >
-                🔍 Analyze Screenshots
-            </button>
-
-            <button
-                class="secondary"
-                onclick="clearEverything()"
-            >
-                Clear
-            </button>
-
-        </div>
-
-    </div>
+<div class="subtitle">
+Experimental importer. Your existing roster will only be read for name matching.
+Nothing will be changed.
+</div>
 
 
-    <!-- ========================================================= -->
-    <!-- STATUS -->
-    <!-- ========================================================= -->
+<!-- ========================================================= -->
+<!-- UPLOAD -->
+<!-- ========================================================= -->
 
-    <div class="panel">
+<div class="panel">
 
-        <strong>Status</strong>
+<label class="upload">
 
-        <div id="status" class="status">
-            Waiting for screenshots...
-        </div>
+    <strong style="font-size:20px;">
+        📸 Select Guild Screenshots
+    </strong>
 
-        <div class="progress">
-            <div
-                id="progressBar"
-                class="progress-bar"
-            ></div>
-        </div>
+    <br><br>
 
-    </div>
+    Select all screenshots covering your guild.
 
+    <br>
 
-    <!-- ========================================================= -->
-    <!-- RESULTS -->
-    <!-- ========================================================= -->
+    The importer automatically ignores the incomplete player
+    at the bottom of each screenshot.
 
-    <div
-        id="resultsPanel"
-        class="panel"
-        style="display:none;"
+    <input
+        id="files"
+        type="file"
+        accept="image/*"
+        multiple
     >
 
-        <h2>Detected Players</h2>
+</label>
 
-        <div id="summary"></div>
+<div id="fileList"></div>
 
-        <br>
+<div class="button-row">
 
-        <table>
+<button
+    id="analyze"
+    onclick="analyze()"
+    disabled
+>
+    🔍 Analyze Screenshots
+</button>
 
-            <thead>
-                <tr>
-                    <th>#</th>
-                    <th>Name</th>
-                    <th>Power</th>
-                    <th>Class</th>
-                    <th>Confidence</th>
-                </tr>
-            </thead>
+<button
+    class="secondary"
+    onclick="clearAll()"
+>
+    Clear
+</button>
 
-            <tbody id="resultsBody"></tbody>
+</div>
 
-        </table>
+</div>
 
-        <div class="button-row">
 
-            <button
-                class="success"
-                onclick="downloadJSON()"
-            >
-                💾 Export JSON
-            </button>
+<!-- ========================================================= -->
+<!-- STATUS -->
+<!-- ========================================================= -->
 
-            <button
-                class="secondary"
-                onclick="copyJSON()"
-            >
-                📋 Copy JSON
-            </button>
+<div class="panel">
 
-        </div>
+<strong>Status</strong>
 
-    </div>
+<div id="status" class="status">
+Waiting for screenshots...
+</div>
+
+<div class="progress">
+    <div
+        id="progress"
+        class="progress-bar"
+    ></div>
+</div>
+
+</div>
+
+
+<!-- ========================================================= -->
+<!-- RESULTS -->
+<!-- ========================================================= -->
+
+<div
+    id="resultsPanel"
+    class="panel"
+    style="display:none;"
+>
+
+<h2>Detected Players</h2>
+
+<div id="summary"></div>
+
+<br>
+
+<table>
+
+<thead>
+
+<tr>
+    <th>#</th>
+    <th>Name</th>
+    <th>Power</th>
+    <th>Class</th>
+    <th>Match</th>
+</tr>
+
+</thead>
+
+<tbody id="results"></tbody>
+
+</table>
+
+<div class="button-row">
+
+<button
+    class="success"
+    onclick="downloadJSON()"
+>
+    💾 Export JSON
+</button>
+
+<button
+    class="secondary"
+    onclick="copyJSON()"
+>
+    📋 Copy JSON
+</button>
+
+</div>
+
+</div>
 
 </div>
 
@@ -380,84 +351,78 @@
 
 /* ================================================================
    CONFIGURATION
-   ================================================================
-
-   These values are based on the screenshots you supplied.
-
-   Screenshot dimensions:
-       832 x 1856
-
-   The code uses percentages instead of fixed pixels so that
-   screenshots from different phones/resolutions should still work.
-
 ================================================================ */
 
 const CONFIG = {
 
-    // Number of complete player rows per screenshot.
-    rowsPerScreenshot: 10,
+    /*
+        Where the class badge is located horizontally.
+
+        Based on your actual screenshots:
+
+        screenshot width = 921
+
+        badge is around x = 135-180
+    */
+
+    badgeX1: 110,
+    badgeX2: 195,
 
     /*
-        First complete player row.
-
-        Based on your screenshots, the first row begins around
-        14.5% down the image.
+        Don't look at the top/bottom UI.
     */
-    firstRowY: 0.145,
+
+    scanY1: 260,
+    scanY2: 1750,
 
     /*
-        Distance between player rows.
+        Minimum vertical distance between badge detections.
 
-        Approximately 7.4% of screenshot height.
+        Each player is roughly 130-150 pixels apart.
     */
-    rowHeight: 0.074,
+
+    minimumRowDistance: 90,
 
     /*
         Name area.
 
-        x values are percentages of screenshot width.
+        Your player names begin around x=160.
     */
-    nameCrop: {
-        x: 0.165,
-        y: 0.20,
-        width: 0.40,
-        height: 0.45
-    },
+
+    nameX1: 155,
+    nameX2: 390,
 
     /*
         Power area.
-
-        This is underneath the player name.
     */
-    powerCrop: {
-        x: 0.165,
-        y: 0.50,
-        width: 0.30,
-        height: 0.38
-    },
+
+    powerX1: 190,
+    powerX2: 350,
 
     /*
-        Class icon.
+        Vertical offsets from the badge center.
 
-        This is the small colored icon attached to the avatar.
+        These are deliberately fairly generous.
     */
-    classCrop: {
-        x: 0.105,
-        y: 0.05,
-        width: 0.075,
-        height: 0.30
-    }
+
+    nameY1: -35,
+    nameY2: 15,
+
+    powerY1: 10,
+    powerY2: 65
 
 };
 
 
 /* ================================================================
-   GLOBAL STATE
+   STATE
 ================================================================ */
 
-let selectedFiles = [];
+let files = [];
 
 let detectedPlayers = [];
+
+let existingRoster = [];
 
 
 /* ================================================================
@@ -465,215 +430,91 @@ let detectedPlayers = [];
 ================================================================ */
 
 document
-    .getElementById("screenshotInput")
-    .addEventListener("change", function(event) {
+.getElementById("files")
+.addEventListener("change", function(event) {
 
-        selectedFiles = Array.from(event.target.files);
+    files = Array.from(event.target.files);
 
-        displaySelectedFiles();
+    displayFiles();
 
-    });
+});
 
 
 /* ================================================================
-   DISPLAY SELECTED FILES
+   DISPLAY FILES
 ================================================================ */
 
-function displaySelectedFiles() {
+function displayFiles() {
 
-    const list = document.getElementById("fileList");
+    const container =
+        document.getElementById("fileList");
 
-    const button = document.getElementById("analyzeButton");
+    container.innerHTML = "";
 
-    list.innerHTML = "";
+    files.forEach(function(file, index) {
 
-    if (selectedFiles.length === 0) {
+        const div =
+            document.createElement("div");
 
-        button.disabled = true;
-
-        return;
-    }
-
-    selectedFiles.forEach((file, index) => {
-
-        const div = document.createElement("div");
-
-        div.className = "file-item";
+        div.className = "file";
 
         div.textContent =
             `${index + 1}. ${file.name}`;
 
-        list.appendChild(div);
+        container.appendChild(div);
 
     });
 
-    button.disabled = false;
 
-    setStatus(
-        `${selectedFiles.length} screenshot(s) selected.\n` +
-        `Expected complete players: approximately ${selectedFiles.length * 10}.`
-    );
+    document.getElementById("analyze").disabled =
+        files.length === 0;
 
 }
 
 
 /* ================================================================
-   MAIN ANALYZER
+   LOAD EXISTING ROSTER
 ================================================================ */
 
-async function analyzeScreenshots() {
-
-    if (selectedFiles.length === 0) {
-
-        return;
-    }
-
-    detectedPlayers = [];
-
-    document.getElementById("analyzeButton").disabled = true;
-
-    document.getElementById("resultsPanel").style.display = "none";
-
-    setProgress(0);
+async function loadRoster() {
 
     try {
 
-        setStatus(
-            "Loading OCR engine...\n" +
-            "The first run can take a little while because the OCR model must be downloaded."
-        );
+        const response =
+            await fetch("roster.json", {
+                cache: "no-store"
+            });
 
-        /*
-            Create ONE worker and reuse it for all OCR operations.
+        if (!response.ok) {
 
-            This is much faster than creating a new worker for every
-            player.
-        */
-
-        const worker = await Tesseract.createWorker("eng");
-
-        /*
-            Names and powers are fairly clean text.
-            PSM 6 tells Tesseract to treat the crop as a block
-            of text.
-        */
-
-        await worker.setParameters({
-            tessedit_pageseg_mode: "6"
-        });
-
-
-        for (
-            let screenshotIndex = 0;
-            screenshotIndex < selectedFiles.length;
-            screenshotIndex++
-        ) {
-
-            const file = selectedFiles[screenshotIndex];
-
-            setStatus(
-                `Processing screenshot ${screenshotIndex + 1} of ${selectedFiles.length}\n` +
-                `${file.name}`
+            throw new Error(
+                "Could not load roster.json"
             );
-
-            const image = await loadImage(file);
-
-            for (
-                let rowIndex = 0;
-                rowIndex < CONFIG.rowsPerScreenshot;
-                rowIndex++
-            ) {
-
-                const player = await processPlayerRow(
-                    image,
-                    rowIndex,
-                    worker,
-                    screenshotIndex
-                );
-
-                if (player) {
-
-                    detectedPlayers.push(player);
-
-                }
-
-                const completedRows =
-                    screenshotIndex * CONFIG.rowsPerScreenshot
-                    + rowIndex
-                    + 1;
-
-                const totalRows =
-                    selectedFiles.length
-                    * CONFIG.rowsPerScreenshot;
-
-                setProgress(
-                    completedRows / totalRows * 100
-                );
-
-            }
 
         }
 
-        await worker.terminate();
+        const data =
+            await response.json();
 
+        existingRoster =
+            Array.isArray(data.members)
+                ? data.members
+                : [];
 
-        /*
-            Remove duplicates.
-
-            This is mostly a safety feature for screenshots where
-            the scrolling position accidentally overlaps more than
-            expected.
-        */
-
-        detectedPlayers = removeDuplicates(
-            detectedPlayers
-        );
-
-
-        /*
-            Sort by screenshot / row position.
-
-            This keeps the same order as the game.
-        */
-
-        detectedPlayers.sort(function(a, b) {
-
-            if (a.screenshot !== b.screenshot) {
-
-                return a.screenshot - b.screenshot;
-
-            }
-
-            return a.row - b.row;
-
-        });
-
-
-        displayResults();
-
-
-        setStatus(
-            `Finished!\n\n` +
-            `Detected ${detectedPlayers.length} unique player(s).`
-        );
+        return true;
 
     }
 
     catch (error) {
 
-        console.error(error);
-
-        setStatus(
-            "ERROR:\n\n" +
-            error.message +
-            "\n\nOpen the browser console for more details."
+        console.warn(
+            "Existing roster could not be loaded:",
+            error
         );
 
-    }
+        existingRoster = [];
 
-    finally {
-
-        document.getElementById("analyzeButton").disabled = false;
+        return false;
 
     }
 
@@ -681,97 +522,555 @@ async function analyzeScreenshots() {
 
 
 /* ================================================================
-   PROCESS ONE PLAYER ROW
+   MAIN ANALYSIS
 ================================================================ */
 
-async function processPlayerRow(
+async function analyze() {
+
+    if (!files.length) {
+        return;
+    }
+
+
+    detectedPlayers = [];
+
+
+    document.getElementById("analyze").disabled =
+        true;
+
+
+    document.getElementById("resultsPanel")
+        .style.display = "none";
+
+
+    setProgress(0);
+
+
+    /*
+        Load current roster.
+
+        This is important because we can use existing player names
+        to correct imperfect OCR.
+    */
+
+    setStatus(
+        "Loading current roster..."
+    );
+
+
+    await loadRoster();
+
+
+    setStatus(
+        `Current roster: ${existingRoster.length} players\n\n` +
+        `Starting OCR...`
+    );
+
+
+    /*
+        Create one OCR worker.
+    */
+
+    const worker =
+        await Tesseract.createWorker("eng");
+
+
+    /*
+        First we configure normal OCR.
+    */
+
+    await worker.setParameters({
+
+        tessedit_pageseg_mode: "7"
+
+    });
+
+
+    /*
+        Process every screenshot.
+    */
+
+    for (
+        let screenshotIndex = 0;
+        screenshotIndex < files.length;
+        screenshotIndex++
+    ) {
+
+        const file =
+            files[screenshotIndex];
+
+
+        setStatus(
+            `Analyzing screenshot ${screenshotIndex + 1} of ${files.length}\n` +
+            `${file.name}\n\n` +
+            `Finding player rows...`
+        );
+
+
+        const image =
+            await loadImage(file);
+
+
+        /*
+            Detect colored class badges.
+
+            This gives us the Y position of every player.
+        */
+
+        const rowCenters =
+            detectPlayerRows(image);
+
+
+        setStatus(
+            `Analyzing screenshot ${screenshotIndex + 1} of ${files.length}\n` +
+            `${file.name}\n\n` +
+            `Found ${rowCenters.length} possible player rows.`
+        );
+
+
+        /*
+            We expect 10 complete players.
+
+            If we find more, use the first 10 valid rows.
+        */
+
+        const rows =
+            rowCenters.slice(0, 10);
+
+
+        for (
+            let rowIndex = 0;
+            rowIndex < rows.length;
+            rowIndex++
+        ) {
+
+            const y =
+                rows[rowIndex];
+
+
+            const player =
+                await processRow(
+                    image,
+                    y,
+                    worker,
+                    screenshotIndex,
+                    rowIndex
+                );
+
+
+            if (player) {
+
+                detectedPlayers.push(player);
+
+            }
+
+
+            const completed =
+                screenshotIndex * 10
+                + rowIndex
+                + 1;
+
+
+            const total =
+                files.length * 10;
+
+
+            setProgress(
+                completed / total * 100
+            );
+
+        }
+
+    }
+
+
+    await worker.terminate();
+
+
+    /*
+        Remove duplicates.
+
+        This is useful if screenshots overlap.
+    */
+
+    detectedPlayers =
+        deduplicatePlayers(
+            detectedPlayers
+        );
+
+
+    /*
+        Try matching OCR names against existing roster.
+    */
+
+    detectedPlayers =
+        matchExistingPlayers(
+            detectedPlayers
+        );
+
+
+    displayResults();
+
+
+    setStatus(
+        `Finished!\n\n` +
+        `Detected ${detectedPlayers.length} unique players.`
+    );
+
+
+    document.getElementById("analyze").disabled =
+        false;
+
+}
+
+
+/* ================================================================
+   DETECT PLAYER ROWS
+================================================================ */
+
+function detectPlayerRows(image) {
+
+    const canvas =
+        document.createElement("canvas");
+
+    canvas.width =
+        image.width;
+
+    canvas.height =
+        image.height;
+
+
+    const ctx =
+        canvas.getContext("2d");
+
+    ctx.drawImage(
+        image,
+        0,
+        0
+    );
+
+
+    const imageData =
+        ctx.getImageData(
+            CONFIG.badgeX1,
+            CONFIG.scanY1,
+            CONFIG.badgeX2 - CONFIG.badgeX1,
+            CONFIG.scanY2 - CONFIG.scanY1
+        );
+
+
+    const data =
+        imageData.data;
+
+
+    /*
+        Count saturated/colorful pixels at every Y.
+
+        The class badges are much more saturated than the
+        gray avatar borders.
+    */
+
+    const counts =
+        new Array(
+            CONFIG.scanY2 - CONFIG.scanY1
+        ).fill(0);
+
+
+    for (
+        let y = 0;
+        y < imageData.height;
+        y++
+    ) {
+
+        for (
+            let x = 0;
+            x < imageData.width;
+            x++
+        ) {
+
+            const index =
+                (y * imageData.width + x) * 4;
+
+
+            const r =
+                data[index];
+
+            const g =
+                data[index + 1];
+
+            const b =
+                data[index + 2];
+
+
+            const max =
+                Math.max(r, g, b);
+
+            const min =
+                Math.min(r, g, b);
+
+
+            /*
+                Saturation approximation.
+            */
+
+            if (
+                max - min > 60 &&
+                max > 100
+            ) {
+
+                counts[y]++;
+
+            }
+
+        }
+
+    }
+
+
+    /*
+        Find peaks.
+
+        We don't need an external library.
+    */
+
+    const peaks = [];
+
+
+    for (
+        let y = 3;
+        y < counts.length - 3;
+        y++
+    ) {
+
+        const value =
+            counts[y];
+
+
+        if (
+            value < 5
+        ) {
+
+            continue;
+
+        }
+
+
+        if (
+            value >= counts[y - 1] &&
+            value >= counts[y + 1] &&
+            value >= counts[y - 2] &&
+            value >= counts[y + 2]
+        ) {
+
+            peaks.push({
+                y:
+                    y + CONFIG.scanY1,
+
+                strength:
+                    value
+            });
+
+        }
+
+    }
+
+
+    /*
+        Merge peaks that are close together.
+
+        A single badge can create several nearby peaks.
+    */
+
+    const merged = [];
+
+
+    for (
+        const peak of peaks
+    ) {
+
+        const last =
+            merged[merged.length - 1];
+
+
+        if (
+            last &&
+            peak.y - last.y <
+            CONFIG.minimumRowDistance
+        ) {
+
+            /*
+                Keep stronger peak.
+            */
+
+            if (
+                peak.strength >
+                last.strength
+            ) {
+
+                merged[
+                    merged.length - 1
+                ] = peak;
+
+            }
+
+        }
+
+        else {
+
+            merged.push(peak);
+
+        }
+
+    }
+
+
+    return merged.map(
+        item => item.y
+    );
+
+}
+
+
+/* ================================================================
+   PROCESS PLAYER ROW
+================================================================ */
+
+async function processRow(
     image,
-    rowIndex,
+    badgeY,
     worker,
-    screenshotIndex
+    screenshotIndex,
+    rowIndex
 ) {
 
-    /*
-        Calculate row position.
-
-        firstRowY is the top of the first complete row.
-
-        rowHeight is the distance from one row to the next.
-    */
-
-    const rowTop =
-        CONFIG.firstRowY +
-        rowIndex * CONFIG.rowHeight;
-
 
     /*
-        Extract class icon.
+        Class comes from the badge color.
     */
-
-    const classImage = cropNormalized(
-        image,
-        CONFIG.classCrop.x,
-        rowTop + CONFIG.classCrop.y * CONFIG.rowHeight,
-        CONFIG.classCrop.width,
-        CONFIG.classCrop.height * CONFIG.rowHeight
-    );
-
 
     const className =
-        detectClassFromColor(classImage);
+        detectClass(
+            image,
+            badgeY
+        );
 
 
     /*
-        Extract player name.
+        OCR NAME
     */
 
-    const nameImage = cropNormalized(
-        image,
-        CONFIG.nameCrop.x,
-        rowTop + CONFIG.nameCrop.y * CONFIG.rowHeight,
-        CONFIG.nameCrop.width,
-        CONFIG.nameCrop.height * CONFIG.rowHeight
-    );
+    const nameCanvas =
+        crop(
+            image,
+
+            CONFIG.nameX1,
+
+            badgeY + CONFIG.nameY1,
+
+            CONFIG.nameX2,
+
+            badgeY + CONFIG.nameY2
+        );
 
 
     /*
-        Extract power.
+        Upscale.
+
+        This helps Tesseract considerably.
     */
 
-    const powerImage = cropNormalized(
-        image,
-        CONFIG.powerCrop.x,
-        rowTop + CONFIG.powerCrop.y * CONFIG.rowHeight,
-        CONFIG.powerCrop.width,
-        CONFIG.powerCrop.height * CONFIG.rowHeight
-    );
+    const enlargedName =
+        upscale(
+            nameCanvas,
+            4
+        );
 
-
-    /*
-        OCR player name.
-    */
 
     const nameResult =
-        await worker.recognize(nameImage);
+        await worker.recognize(
+            enlargedName
+        );
+
 
     let name =
-        cleanName(nameResult.data.text);
+        cleanName(
+            nameResult.data.text
+        );
 
 
     /*
-        OCR power.
+        OCR POWER
     */
 
-    const powerResult =
-        await worker.recognize(powerImage);
+    const powerCanvas =
+        crop(
+            image,
 
-    let power =
-        parsePower(powerResult.data.text);
+            CONFIG.powerX1,
+
+            badgeY + CONFIG.powerY1,
+
+            CONFIG.powerX2,
+
+            badgeY + CONFIG.powerY2
+        );
+
+
+    const enlargedPower =
+        upscale(
+            powerCanvas,
+            5
+        );
 
 
     /*
-        If both name and power failed, this probably wasn't
-        a real player row.
+        Power OCR uses a restricted character set.
+    */
+
+    await worker.setParameters({
+
+        tessedit_char_whitelist:
+            "0123456789.MKmk",
+
+        tessedit_pageseg_mode:
+            "7"
+
+    });
+
+
+    const powerResult =
+        await worker.recognize(
+            enlargedPower
+        );
+
+
+    const powerText =
+        powerResult.data.text;
+
+
+    const power =
+        parsePower(
+            powerText
+        );
+
+
+    /*
+        Restore normal OCR settings for names.
+    */
+
+    await worker.setParameters({
+
+        tessedit_char_whitelist:
+            "",
+
+        tessedit_pageseg_mode:
+            "7"
+
+    });
+
+
+    /*
+        Ignore a completely empty row.
     */
 
     if (
@@ -784,137 +1083,42 @@ async function processPlayerRow(
     }
 
 
-    /*
-        Estimate confidence.
-
-        This is NOT the actual Tesseract confidence score.
-        It's our own simple sanity score.
-    */
-
-    let confidence = "Medium";
-
-    if (
-        name &&
-        power &&
-        className
-    ) {
-
-        confidence = "High";
-
-    }
-    else if (
-        name ||
-        power
-    ) {
-
-        confidence = "Low";
-
-    }
-
-
     return {
 
-        id: crypto.randomUUID(),
+        id:
+            crypto.randomUUID(),
 
-        name: name || "UNKNOWN",
+        name:
+            name || "UNKNOWN",
 
-        class: className || "Unknown",
+        class:
+            className || "Unknown",
 
-        power: power || 0,
+        power:
+            power,
 
-        notes: "",
+        notes:
+            "",
 
-        screenshot: screenshotIndex,
+        screenshot:
+            screenshotIndex,
 
-        row: rowIndex,
+        row:
+            rowIndex,
 
-        confidence: confidence
+        badgeY:
+            badgeY,
+
+        originalOCRName:
+            name,
+
+        originalOCRPower:
+            powerText,
+
+        match:
+            null
 
     };
-
-}
-
-
-/* ================================================================
-   LOAD IMAGE
-================================================================ */
-
-function loadImage(file) {
-
-    return new Promise(function(resolve, reject) {
-
-        const reader = new FileReader();
-
-        reader.onload = function(event) {
-
-            const img = new Image();
-
-            img.onload = function() {
-
-                resolve(img);
-
-            };
-
-            img.onerror = reject;
-
-            img.src = event.target.result;
-
-        };
-
-        reader.onerror = reject;
-
-        reader.readAsDataURL(file);
-
-    });
-
-}
-
-
-/* ================================================================
-   CROP USING NORMALIZED COORDINATES
-================================================================ */
-
-function cropNormalized(
-    image,
-    x,
-    y,
-    width,
-    height
-) {
-
-    const canvas =
-        document.createElement("canvas");
-
-    canvas.width =
-        Math.round(image.width * width);
-
-    canvas.height =
-        Math.round(image.height * height);
-
-    const ctx =
-        canvas.getContext("2d");
-
-    ctx.drawImage(
-
-        image,
-
-        Math.round(image.width * x),
-
-        Math.round(image.height * y),
-
-        canvas.width,
-
-        canvas.height,
-
-        0,
-        0,
-
-        canvas.width,
-        canvas.height
-
-    );
-
-    return canvas;
 
 }
 
@@ -923,21 +1127,36 @@ function cropNormalized(
    CLASS DETECTION
 ================================================================ */
 
-function detectClassFromColor(canvas) {
+function detectClass(
+    image,
+    centerY
+) {
+
+    const canvas =
+        crop(
+            image,
+
+            120,
+
+            centerY - 30,
+
+            195,
+
+            centerY + 30
+        );
+
 
     const ctx =
         canvas.getContext("2d");
 
-    const imageData =
+
+    const data =
         ctx.getImageData(
             0,
             0,
             canvas.width,
             canvas.height
-        );
-
-    const data =
-        imageData.data;
+        ).data;
 
 
     let red = 0;
@@ -945,18 +1164,6 @@ function detectClassFromColor(canvas) {
     let blue = 0;
     let orange = 0;
 
-    let samples = 0;
-
-
-    /*
-        Look for strongly colored pixels.
-
-        The exact game colors can vary slightly because of
-        anti-aliasing, compression and device screenshots.
-
-        Therefore we use broad thresholds rather than requiring
-        exact RGB values.
-    */
 
     for (
         let i = 0;
@@ -970,35 +1177,13 @@ function detectClassFromColor(canvas) {
 
 
         /*
-            Ignore nearly white / gray pixels.
-        */
-
-        const max =
-            Math.max(r, g, b);
-
-        const min =
-            Math.min(r, g, b);
-
-        if (
-            max - min < 45
-        ) {
-
-            continue;
-
-        }
-
-
-        samples++;
-
-
-        /*
             RED
         */
 
         if (
             r > 120 &&
-            r > g * 1.25 &&
-            r > b * 1.25
+            r > g * 1.35 &&
+            r > b * 1.35
         ) {
 
             red++;
@@ -1012,7 +1197,7 @@ function detectClassFromColor(canvas) {
 
         if (
             g > 90 &&
-            g > r * 1.15 &&
+            g > r * 1.20 &&
             g > b * 1.05
         ) {
 
@@ -1038,15 +1223,12 @@ function detectClassFromColor(canvas) {
 
         /*
             ORANGE
-
-            Orange has high red and moderate/high green,
-            but comparatively low blue.
         */
 
         if (
-            r > 120 &&
+            r > 130 &&
             g > 60 &&
-            r > b * 1.5 &&
+            r > b * 1.50 &&
             g > b * 1.15
         ) {
 
@@ -1057,81 +1239,233 @@ function detectClassFromColor(canvas) {
     }
 
 
-    /*
-        Calculate ratios.
+    const values = [
 
-        We don't require a minimum percentage of the entire
-        crop because most of the crop is actually avatar artwork.
-    */
+        {
+            name: "Berserker",
+            value: red
+        },
 
-    const values = {
+        {
+            name: "Arcanist",
+            value: green
+        },
 
-        Berserker: red,
+        {
+            name: "Paladin",
+            value: orange
+        },
 
-        Arcanist: green,
-
-        Paladin: orange,
-
-        Archmage: blue
-
-    };
-
-
-    let bestClass = null;
-
-    let bestValue = 0;
-
-
-    for (
-        const className in values
-    ) {
-
-        if (
-            values[className] > bestValue
-        ) {
-
-            bestValue =
-                values[className];
-
-            bestClass =
-                className;
-
+        {
+            name: "Archmage",
+            value: blue
         }
 
-    }
+    ];
+
+
+    values.sort(
+        (a, b) =>
+            b.value - a.value
+    );
 
 
     /*
-        Require at least a few matching pixels.
-
-        This prevents completely grayscale crops from randomly
-        becoming a class.
+        Require some actual color.
     */
 
     if (
-        bestValue < 3
+        values[0].value < 5
     ) {
 
-        return null;
+        return "Unknown";
 
     }
 
 
-    return bestClass;
+    return values[0].name;
 
 }
 
 
 /* ================================================================
-   CLEAN OCR NAME
+   IMAGE CROP
+================================================================ */
+
+function crop(
+    image,
+    x1,
+    y1,
+    x2,
+    y2
+) {
+
+    x1 =
+        Math.max(
+            0,
+            Math.round(x1)
+        );
+
+    y1 =
+        Math.max(
+            0,
+            Math.round(y1)
+        );
+
+    x2 =
+        Math.min(
+            image.width,
+            Math.round(x2)
+        );
+
+    y2 =
+        Math.min(
+            image.height,
+            Math.round(y2)
+        );
+
+
+    const canvas =
+        document.createElement("canvas");
+
+
+    canvas.width =
+        x2 - x1;
+
+    canvas.height =
+        y2 - y1;
+
+
+    canvas
+        .getContext("2d")
+        .drawImage(
+
+            image,
+
+            x1,
+            y1,
+
+            canvas.width,
+            canvas.height,
+
+            0,
+            0,
+
+            canvas.width,
+            canvas.height
+
+        );
+
+
+    return canvas;
+
+}
+
+
+/* ================================================================
+   UPSCALE
+================================================================ */
+
+function upscale(
+    canvas,
+    factor
+) {
+
+    const result =
+        document.createElement("canvas");
+
+
+    result.width =
+        canvas.width * factor;
+
+    result.height =
+        canvas.height * factor;
+
+
+    const ctx =
+        result.getContext("2d");
+
+
+    ctx.imageSmoothingEnabled =
+        true;
+
+
+    ctx.drawImage(
+        canvas,
+
+        0,
+        0,
+
+        result.width,
+        result.height
+    );
+
+
+    return result;
+
+}
+
+
+/* ================================================================
+   LOAD IMAGE
+================================================================ */
+
+function loadImage(file) {
+
+    return new Promise(
+        function(resolve, reject) {
+
+            const reader =
+                new FileReader();
+
+
+            reader.onload =
+                function(event) {
+
+                    const img =
+                        new Image();
+
+
+                    img.onload =
+                        function() {
+
+                            resolve(img);
+
+                        };
+
+
+                    img.onerror =
+                        reject;
+
+
+                    img.src =
+                        event.target.result;
+
+                };
+
+
+            reader.onerror =
+                reject;
+
+
+            reader.readAsDataURL(
+                file
+            );
+
+        }
+    );
+
+}
+
+
+/* ================================================================
+   CLEAN NAME
 ================================================================ */
 
 function cleanName(text) {
 
     if (!text) {
-
         return "";
-
     }
 
 
@@ -1143,23 +1477,30 @@ function cleanName(text) {
 
 
     /*
-        Remove common OCR garbage.
+        Remove obvious OCR junk around the edges.
     */
 
     name =
         name
-            .replace(/^[-_=+~.,:;]+/, "")
-            .replace(/[-_=+~.,:;]+$/, "")
+            .replace(
+                /^[^A-Za-z0-9^?_.-]+/,
+                ""
+            )
+            .replace(
+                /[^A-Za-z0-9^?_.-]+$/,
+                ""
+            )
             .trim();
 
 
     /*
-        Names should not contain the power number.
+        If OCR accidentally captured the power,
+        remove it.
     */
 
     name =
         name.replace(
-            /(?:\d+(?:\.\d+)?\s*[MKmk])$/,
+            /\s+\d+(?:[.,]\d+)?\s*[MKmk]\s*$/,
             ""
         ).trim();
 
@@ -1176,67 +1517,72 @@ function cleanName(text) {
 function parsePower(text) {
 
     if (!text) {
-
         return 0;
-
     }
 
 
     let value =
         text
-            .replace(/\n/g, " ")
-            .replace(/⚔/g, "")
+            .replace(/\s/g, "")
+            .replace(/,/g, ".")
             .trim();
 
 
     /*
-        Remove spaces inside numbers.
+        Search specifically for a number followed by
+        M or K.
 
-        Example:
-
-        "3 .92M"
-
-        becomes:
-
-        "3.92M"
+        This avoids accidentally reading the weapon icon
+        as a number.
     */
 
-    value =
-        value.replace(
-            /(\d)\s+(\d)/g,
-            "$1$2"
+    let match =
+        value.match(
+            /(\d+(?:\.\d+)?)([MKmk])/
         );
 
 
+    if (match) {
+
+        let number =
+            parseFloat(match[1]);
+
+
+        const suffix =
+            match[2].toUpperCase();
+
+
+        if (
+            suffix === "M"
+        ) {
+
+            number *= 1000000;
+
+        }
+
+        else if (
+            suffix === "K"
+        ) {
+
+            number *= 1000;
+
+        }
+
+
+        return Math.round(
+            number
+        );
+
+    }
+
+
     /*
-        Fix common OCR mistakes.
-
-        Tesseract may read:
-
-        M → N
-        K → X
-        O → 0
+        Fallback for plain numbers.
     */
 
-    value =
-        value
-            .replace(/([0-9.])N\b/gi, "$1M")
-            .replace(/([0-9.])X\b/gi, "$1K");
-
-
-    /*
-        Look for:
-
-        3.92M
-        4.07M
-        2.3M
-        960
-        1.25K
-    */
-
-    const match =
+    match =
         value.match(
-            /(\d+(?:[.,]\d+)?)\s*([MKmk])?/ 
+            /\d+(?:\.\d+)?/
         );
 
 
@@ -1247,43 +1593,20 @@ function parsePower(text) {
     }
 
 
-    let number =
-        parseFloat(
-            match[1].replace(",", ".")
-        );
-
-
-    const suffix =
-        (match[2] || "").toUpperCase();
-
-
-    if (
-        suffix === "M"
-    ) {
-
-        number *= 1000000;
-
-    }
-
-    else if (
-        suffix === "K"
-    ) {
-
-        number *= 1000;
-
-    }
-
-
-    return Math.round(number);
+    return Math.round(
+        parseFloat(match[0])
+    );
 
 }
 
 
 /* ================================================================
-   REMOVE DUPLICATES
+   DEDUPLICATE
 ================================================================ */
 
-function removeDuplicates(players) {
+function deduplicatePlayers(
+    players
+) {
 
     const unique = [];
 
@@ -1291,10 +1614,6 @@ function removeDuplicates(players) {
     for (
         const player of players
     ) {
-
-        /*
-            Ignore completely failed OCR rows.
-        */
 
         if (
             !player.name ||
@@ -1306,28 +1625,16 @@ function removeDuplicates(players) {
         }
 
 
-        /*
-            Normalize name for comparison.
-        */
-
-        const normalizedName =
-            normalizeName(player.name);
-
-
-        /*
-            Look for an existing player with the same
-            normalized name.
-        */
-
         const existing =
-            unique.find(function(existingPlayer) {
-
-                return (
-                    normalizeName(existingPlayer.name)
-                    === normalizedName
-                );
-
-            });
+            unique.find(
+                p =>
+                    normalizeName(
+                        p.name
+                    ) ===
+                    normalizeName(
+                        player.name
+                    )
+            );
 
 
         if (!existing) {
@@ -1340,13 +1647,12 @@ function removeDuplicates(players) {
 
 
         /*
-            If duplicate found, keep whichever result has
-            more useful information.
+            Prefer the record with more information.
         */
 
         if (
-            existing.power === 0 &&
-            player.power > 0
+            !existing.power &&
+            player.power
         ) {
 
             existing.power =
@@ -1356,8 +1662,8 @@ function removeDuplicates(players) {
 
 
         if (
-            !existing.class &&
-            player.class
+            existing.class === "Unknown" &&
+            player.class !== "Unknown"
         ) {
 
             existing.class =
@@ -1374,14 +1680,321 @@ function removeDuplicates(players) {
 
 
 /* ================================================================
+   MATCH OCR AGAINST EXISTING ROSTER
+================================================================ */
+
+function matchExistingPlayers(
+    players
+) {
+
+    for (
+        const player of players
+    ) {
+
+        const result =
+            findBestRosterMatch(
+                player.name
+            );
+
+
+        if (
+            result
+        ) {
+
+            player.match =
+                result.member;
+
+
+            /*
+                IMPORTANT:
+
+                If we have a strong existing-name match,
+                use the real roster name instead of the
+                imperfect OCR name.
+            */
+
+            player.name =
+                result.member.name;
+
+            player.matchScore =
+                result.score;
+
+        }
+
+    }
+
+
+    return players;
+
+}
+
+
+/* ================================================================
+   FIND BEST MATCH
+================================================================ */
+
+function findBestRosterMatch(
+    ocrName
+) {
+
+    if (
+        !ocrName ||
+        !existingRoster.length
+    ) {
+
+        return null;
+
+    }
+
+
+    const target =
+        normalizeName(
+            ocrName
+        );
+
+
+    if (!target) {
+        return null;
+    }
+
+
+    let best =
+        null;
+
+
+    for (
+        const member of existingRoster
+    ) {
+
+        const candidate =
+            normalizeName(
+                member.name
+            );
+
+
+        if (!candidate) {
+            continue;
+        }
+
+
+        let score =
+            similarity(
+                target,
+                candidate
+            );
+
+
+        /*
+            Exact match.
+        */
+
+        if (
+            target === candidate
+        ) {
+
+            score = 1;
+
+        }
+
+
+        /*
+            One contains the other.
+
+            Useful for OCR such as:
+
+            "BrotherBadger."
+
+            vs
+
+            "BrotherBadger"
+        */
+
+        if (
+            target.includes(candidate) ||
+            candidate.includes(target)
+        ) {
+
+            score =
+                Math.max(
+                    score,
+                    0.88
+                );
+
+        }
+
+
+        if (
+            !best ||
+            score > best.score
+        ) {
+
+            best = {
+
+                member:
+                    member,
+
+                score:
+                    score
+
+            };
+
+        }
+
+    }
+
+
+    /*
+        Don't accept weak matches.
+
+        0.72 is deliberately conservative.
+    */
+
+    if (
+        best &&
+        best.score >= 0.72
+    ) {
+
+        return best;
+
+    }
+
+
+    return null;
+
+}
+
+
+/* ================================================================
    NORMALIZE NAME
 ================================================================ */
 
-function normalizeName(name) {
+function normalizeName(
+    name
+) {
 
-    return name
+    return String(name)
         .toLowerCase()
-        .replace(/[^a-z0-9]/g, "");
+        .replace(
+            /[^a-z0-9]/g,
+            ""
+        );
+
+}
+
+
+/* ================================================================
+   STRING SIMILARITY
+================================================================ */
+
+function similarity(
+    a,
+    b
+) {
+
+    if (
+        a === b
+    ) {
+
+        return 1;
+
+    }
+
+
+    if (
+        !a ||
+        !b
+    ) {
+
+        return 0;
+
+    }
+
+
+    /*
+        Levenshtein distance.
+    */
+
+    const matrix =
+        [];
+
+
+    for (
+        let i = 0;
+        i <= b.length;
+        i++
+    ) {
+
+        matrix[i] = [i];
+
+    }
+
+
+    for (
+        let j = 0;
+        j <= a.length;
+        j++
+    ) {
+
+        matrix[0][j] = j;
+
+    }
+
+
+    for (
+        let i = 1;
+        i <= b.length;
+        i++
+    ) {
+
+        for (
+            let j = 1;
+            j <= a.length;
+            j++
+        ) {
+
+            if (
+                b.charAt(i - 1) ===
+                a.charAt(j - 1)
+            ) {
+
+                matrix[i][j] =
+                    matrix[i - 1][j - 1];
+
+            }
+
+            else {
+
+                matrix[i][j] =
+                    Math.min(
+
+                        matrix[i - 1][j] + 1,
+
+                        matrix[i][j - 1] + 1,
+
+                        matrix[i - 1][j - 1] + 1
+
+                    );
+
+            }
+
+        }
+
+    }
+
+
+    const distance =
+        matrix[b.length][a.length];
+
+
+    const maxLength =
+        Math.max(
+            a.length,
+            b.length
+        );
+
+
+    return 1 -
+        distance / maxLength;
 
 }
 
@@ -1393,308 +2006,397 @@ function normalizeName(name) {
 function displayResults() {
 
     const panel =
-        document.getElementById("resultsPanel");
+        document.getElementById(
+            "resultsPanel"
+        );
+
 
     const body =
-        document.getElementById("resultsBody");
-
-    const summary =
-        document.getElementById("summary");
+        document.getElementById(
+            "results"
+        );
 
 
     body.innerHTML = "";
 
 
-    const classCounts = {
-
-        Berserker: 0,
-        Paladin: 0,
-        Archmage: 0,
-        Arcanist: 0,
-        Unknown: 0
-
-    };
+    let matched = 0;
+    let unmatched = 0;
 
 
-    detectedPlayers.forEach(function(player) {
+    detectedPlayers.forEach(
+        function(player, index) {
 
-        if (
-            classCounts[player.class] !== undefined
-        ) {
+            if (
+                player.match
+            ) {
 
-            classCounts[player.class]++;
+                matched++;
+
+            }
+
+            else {
+
+                unmatched++;
+
+            }
+
+
+            const tr =
+                document.createElement(
+                    "tr"
+                );
+
+
+            const className =
+                player.class
+                    .toLowerCase();
+
+
+            let matchHTML;
+
+
+            if (
+                player.match
+            ) {
+
+                matchHTML =
+
+                    `<span class="match">
+                        ✓ ${Math.round(player.matchScore * 100)}%
+                    </span>`;
+
+            }
+
+            else {
+
+                matchHTML =
+
+                    `<span class="new-player">
+                        ⚠ New / unmatched
+                    </span>`;
+
+            }
+
+
+            tr.innerHTML = `
+
+                <td>
+                    ${index + 1}
+                </td>
+
+                <td>
+
+                    <strong>
+                        ${escapeHTML(
+                            player.name
+                        )}
+                    </strong>
+
+                    ${
+                        player.originalOCRName &&
+                        player.originalOCRName !== player.name
+
+                        ? `<br>
+                           <span class="small">
+                               OCR: ${escapeHTML(
+                                   player.originalOCRName
+                               )}
+                           </span>`
+
+                        : ""
+                    }
+
+                </td>
+
+                <td>
+
+                    ${
+                        player.power
+
+                        ? player.power.toLocaleString()
+
+                        : `<span class="bad">
+                            UNKNOWN
+                           </span>`
+                    }
+
+                    ${
+                        player.originalOCRPower
+
+                        ? `<br>
+                           <span class="small">
+                               OCR: ${escapeHTML(
+                                   player.originalOCRPower
+                               )}
+                           </span>`
+
+                        : ""
+                    }
+
+                </td>
+
+                <td>
+
+                    <span
+                        class="badge ${
+                            [
+                                "berserker",
+                                "arcanist",
+                                "paladin",
+                                "archmage"
+                            ].includes(className)
+                            ? className
+                            : "unknown"
+                        }"
+                    >
+                        ${escapeHTML(
+                            player.class
+                        )}
+                    </span>
+
+                </td>
+
+                <td>
+                    ${matchHTML}
+                </td>
+
+            `;
+
+
+            body.appendChild(tr);
 
         }
-
-        else {
-
-            classCounts.Unknown++;
-
-        }
+    );
 
 
-        const row =
-            document.createElement("tr");
-
-
-        const classCss =
-            player.class
-                .toLowerCase();
-
-
-        row.innerHTML = `
-
-            <td>${body.children.length + 1}</td>
-
-            <td>
-                <strong>
-                    ${escapeHTML(player.name)}
-                </strong>
-            </td>
-
-            <td>
-                ${player.power
-                    ? player.power.toLocaleString()
-                    : '<span class="warning">UNKNOWN</span>'
-                }
-            </td>
-
-            <td>
-
-                <span class="class-badge ${classCss}">
-                    ${escapeHTML(player.class)}
-                </span>
-
-            </td>
-
-            <td>
-                ${confidenceHTML(player.confidence)}
-            </td>
-
-        `;
-
-
-        body.appendChild(row);
-
-    });
-
-
-    summary.innerHTML = `
+    document.getElementById(
+        "summary"
+    ).innerHTML = `
 
         <strong>
-            ${detectedPlayers.length} players detected
+            ${detectedPlayers.length}
+            players detected
         </strong>
 
         <br><br>
 
-        Berserker:
-        ${classCounts.Berserker}
-        &nbsp;&nbsp;
+        <span class="good">
+            ✓ ${matched} matched existing roster
+        </span>
 
-        Paladin:
-        ${classCounts.Paladin}
-        &nbsp;&nbsp;
+        &nbsp;&nbsp;&nbsp;
 
-        Archmage:
-        ${classCounts.Archmage}
-        &nbsp;&nbsp;
-
-        Arcanist:
-        ${classCounts.Arcanist}
-
-        <br>
-
-        Unknown:
-        ${classCounts.Unknown}
+        <span class="warn">
+            ⚠ ${unmatched} unmatched
+        </span>
 
     `;
 
 
-    panel.style.display = "block";
+    panel.style.display =
+        "block";
 
 }
 
 
 /* ================================================================
-   CONFIDENCE DISPLAY
+   EXPORT JSON
 ================================================================ */
 
-function confidenceHTML(confidence) {
+function createJSON() {
 
-    if (
-        confidence === "High"
-    ) {
+    return {
 
-        return `<span class="good">✓ High</span>`;
+        format:
+            "sword-x-staff-guild-planner",
 
-    }
-
-    if (
-        confidence === "Medium"
-    ) {
-
-        return `<span class="warning">⚠ Medium</span>`;
-
-    }
-
-    return `<span class="error">⚠ Low</span>`;
-
-}
-
-
-/* ================================================================
-   ESCAPE HTML
-================================================================ */
-
-function escapeHTML(text) {
-
-    return String(text)
-        .replace(/&/g, "&amp;")
-        .replace(/</g, "&lt;")
-        .replace(/>/g, "&gt;")
-        .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
-
-}
-
-
-/* ================================================================
-   DOWNLOAD JSON
-================================================================ */
-
-function downloadJSON() {
-
-    const output = {
-
-        format: "sword-x-staff-guild-planner",
-
-        version: 4,
+        version:
+            4,
 
         exportedAt:
             new Date().toISOString(),
 
         members:
-            detectedPlayers.map(function(player) {
+            detectedPlayers.map(
+                function(player) {
 
-                return {
+                    return {
 
-                    id: player.id,
+                        id:
+                            player.match
+                            ? player.match.id
+                            : player.id,
 
-                    name: player.name,
+                        name:
+                            player.name,
 
-                    class: player.class,
+                        class:
+                            player.class,
 
-                    power: player.power,
+                        power:
+                            player.power,
 
-                    notes: player.notes
+                        notes:
+                            player.match
+                            ? player.match.notes || ""
+                            : ""
 
-                };
+                    };
 
-            }),
+                }
+            ),
 
         teams: []
 
     };
+
+}
+
+
+function downloadJSON() {
+
+    const json =
+        createJSON();
 
 
     const blob =
         new Blob(
+
             [
                 JSON.stringify(
-                    output,
+                    json,
                     null,
                     2
                 )
             ],
+
             {
-                type: "application/json"
+                type:
+                    "application/json"
             }
+
         );
 
 
     const url =
-        URL.createObjectURL(blob);
+        URL.createObjectURL(
+            blob
+        );
 
 
     const a =
-        document.createElement("a");
+        document.createElement(
+            "a"
+        );
 
-    a.href = url;
+
+    a.href =
+        url;
 
     a.download =
-        "roster-ocr-test.json";
+        "roster-screenshot-import.json";
+
 
     a.click();
 
 
-    URL.revokeObjectURL(url);
+    URL.revokeObjectURL(
+        url
+    );
 
 }
 
 
-/* ================================================================
-   COPY JSON
-================================================================ */
-
 async function copyJSON() {
 
-    const output = {
-
-        format: "sword-x-staff-guild-planner",
-
-        version: 4,
-
-        exportedAt:
-            new Date().toISOString(),
-
-        members:
-            detectedPlayers.map(function(player) {
-
-                return {
-
-                    id: player.id,
-
-                    name: player.name,
-
-                    class: player.class,
-
-                    power: player.power,
-
-                    notes: ""
-
-                };
-
-            }),
-
-        teams: []
-
-    };
-
-
     await navigator.clipboard.writeText(
-        JSON.stringify(output, null, 2)
+
+        JSON.stringify(
+            createJSON(),
+            null,
+            2
+        )
+
     );
 
 
     alert(
-        "Roster JSON copied to clipboard."
+        "Roster JSON copied."
     );
 
 }
 
 
 /* ================================================================
-   CLEAR
+   HTML ESCAPE
 ================================================================ */
 
-function clearEverything() {
+function escapeHTML(
+    text
+) {
 
-    selectedFiles = [];
+    return String(text)
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* ================================================================
+   UI
+================================================================ */
+
+function setStatus(
+    text
+) {
+
+    document.getElementById(
+        "status"
+    ).textContent =
+        text;
+
+}
+
+
+function setProgress(
+    value
+) {
+
+    document.getElementById(
+        "progress"
+    ).style.width =
+        `${Math.min(100, value)}%`;
+
+}
+
+
+function clearAll() {
+
+    files = [];
 
     detectedPlayers = [];
 
     document.getElementById(
-        "screenshotInput"
+        "files"
     ).value = "";
 
     document.getElementById(
@@ -1703,40 +2405,19 @@ function clearEverything() {
 
     document.getElementById(
         "resultsPanel"
-    ).style.display = "none";
+    ).style.display =
+        "none";
+
+    document.getElementById(
+        "analyze"
+    ).disabled =
+        true;
 
     setProgress(0);
 
     setStatus(
         "Waiting for screenshots..."
     );
-
-}
-
-
-/* ================================================================
-   STATUS
-================================================================ */
-
-function setStatus(text) {
-
-    document.getElementById(
-        "status"
-    ).textContent = text;
-
-}
-
-
-/* ================================================================
-   PROGRESS
-================================================================ */
-
-function setProgress(percent) {
-
-    document.getElementById(
-        "progressBar"
-    ).style.width =
-        `${Math.min(100, percent)}%`;
 
 }
 
