@@ -169,6 +169,100 @@
     </form>
   </dialog>
 
+    <dialog id="screenshotDialog">
+
+    <form class="dialog" onsubmit="return false">
+
+      <button
+        type="button"
+        class="x"
+        data-close="screenshotDialog"
+      >
+        ×
+      </button>
+
+      <div class="dialog-icon">📷</div>
+
+      <h2>Update Roster from Screenshots</h2>
+
+      <p>
+        Upload the Guildmates screenshots from Sword × Staff.
+        You can select all 6 screenshots at once.
+      </p>
+
+      <p class="muted">
+        The importer reads only the class icon, player name,
+        and power. Incomplete players at the bottom of a
+        screenshot are automatically ignored.
+      </p>
+
+      <label>
+        Guild screenshots
+
+        <input
+          id="screenshotFiles"
+          type="file"
+          accept="image/png,image/jpeg,image/webp"
+          multiple
+        >
+      </label>
+
+      <div
+        id="ocrProgress"
+        class="status"
+        style="margin-top:12px"
+      >
+        Choose your screenshots, then click
+        Process Screenshots.
+      </div>
+
+      <div
+        id="ocrSummary"
+        style="margin-top:12px"
+      ></div>
+
+      <div
+        id="ocrResults"
+        style="
+          margin-top:15px;
+          max-height:420px;
+          overflow:auto;
+        "
+      ></div>
+
+      <div class="dialog-actions">
+
+        <button
+          type="button"
+          id="clearScreenshots"
+        >
+          Clear
+        </button>
+
+        <button
+          type="button"
+          data-process-screenshots
+          class="primary"
+        >
+          🔎 Process Screenshots
+        </button>
+
+        <button
+          type="button"
+          id="applyScreenshots"
+          class="primary"
+          disabled
+        >
+          ✓ Apply Changes
+        </button>
+
+      </div>
+
+    </form>
+
+  </dialog>
+
+  <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
