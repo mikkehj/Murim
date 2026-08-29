@@ -1573,11 +1573,447 @@ function cleanName(text){
   return candidate;
 }
 
-
 /* =========================================================
    PROCESS ONE SCREENSHOT
-========================================================= */
+   ========================================================= */
 
+/*
+  Improved OCR strategy
+
+  We do NOT ask OCR to read:
+
+      class icon + name + weapon icon + power
+
+  as one large block.
+
+  Instead:
+
+  1. OCR the whole screenshot once.
+  2. Use the detected class-icon rows.
+  3. Find the closest name text inside each row.
+  4. OCR ONLY the power number, excluding the weapon icon.
+*/
+
+
+function cleanOcrName(text){
+
+  let s=String(text||'')
+    .replace(/\r/g,' ')
+    .replace(/\n/g,' ')
+    .trim();
+
+  /*
+    Remove common OCR garbage around names.
+  */
+
+  s=s
+    .replace(/^[^A-Za-z0-9À-ÿ_^?'. -]+/,'')
+    .replace(/[^A-Za-z0-9À-ÿ_^?'. -]+$/,'')
+    .replace(/\s{2,}/g,' ')
+    .trim();
+
+  /*
+    Reject obvious non-name OCR.
+  */
+
+  if(!s)return '';
+
+  if(
+    /^(expert|iii|ii|i|rank|power|this|week|total|online)$/i
+      .test(s)
+  ){
+    return '';
+  }
+
+  /*
+    Reject values such as:
+
+      3.92M
+      4.28M
+      710
+  */
+
+  if(/^[\d.,]+[KMB]?$/i.test(s)){
+    return '';
+  }
+
+  return s;
+}
+
+
+/*
+  Find a player name near a detected row.
+
+  OCR coordinates are in original screenshot pixels.
+*/
+function findNameForRow(words,cy){
+
+  const candidates=[];
+
+  for(const w of words){
+
+    const text=String(w.text||'').trim();
+
+    if(!text)
+      continue;
+
+    const x=Number(w.bbox?.x0||0);
+    const y=Number(w.bbox?.y0||0);
+    const ww=Number(w.bbox?.x1||0)-x;
+    const hh=Number(w.bbox?.y1||0)-y;
+
+    /*
+      Player names are in this area.
+
+      We intentionally exclude the class icon,
+      power number, rank, contribution, etc.
+    */
+
+    if(x<145 || x>370)
+      continue;
+
+    /*
+      Name is normally above the power value.
+    */
+
+    if(y<cy-65 || y>cy+8)
+      continue;
+
+    const cleaned=cleanOcrName(text);
+
+    if(!cleaned)
+      continue;
+
+    /*
+      Reject things that obviously belong
+      to other columns.
+    */
+
+    if(
+      /expert/i.test(cleaned) ||
+      /rank/i.test(cleaned) ||
+      /power/i.test(cleaned)
+    ){
+      continue;
+    }
+
+    candidates.push({
+      text:cleaned,
+      x,
+      y,
+      width:ww,
+      height:hh,
+      conf:Number(w.conf||0)
+    });
+  }
+
+  if(!candidates.length)
+    return '';
+
+  /*
+    Prefer:
+
+      - text closest to row center
+      - text further left
+      - larger OCR confidence
+  */
+
+  candidates.sort((a,b)=>{
+
+    const da=Math.abs((a.y+a.height/2)-(cy-20));
+    const db=Math.abs((b.y+b.height/2)-(cy-20));
+
+    return(
+      da-db ||
+      a.x-b.x ||
+      b.conf-a.conf
+    );
+
+  });
+
+  /*
+    In most cases the first candidate is enough.
+
+    However, OCR can split a name into multiple words.
+    If several words are very close together, combine them.
+  */
+
+  const first=candidates[0];
+
+  const nearby=candidates
+    .filter(x=>
+      Math.abs(x.y-first.y)<18 &&
+      Math.abs(x.x-(first.x+first.width))<20
+    )
+    .sort((a,b)=>a.x-b.x);
+
+  if(nearby.length>1){
+
+    const combined=nearby
+      .map(x=>x.text)
+      .join(' ')
+      .trim();
+
+    if(combined)
+      return combined;
+  }
+
+  return first.text;
+}
+
+
+/*
+  OCR ONLY the power value.
+
+  Important:
+  The crossed-swords icon is deliberately excluded.
+
+  On your screenshots the actual number starts
+  around x=185.
+*/
+async function readPowerForRow(canvas,cy){
+
+  /*
+    Power number region.
+
+    Example:
+
+       [crossed swords] 3.92M
+
+                       ^
+                       |
+              start OCR here
+  */
+
+  const x=185;
+
+  const y=Math.max(
+    0,
+    Math.floor(cy+12)
+  );
+
+  const width=Math.min(
+    145,
+    canvas.width-x
+  );
+
+  const height=Math.min(
+    58,
+    canvas.height-y
+  );
+
+  if(width<=5 || height<=5)
+    return null;
+
+  let crop=cropCanvas(
+    canvas,
+    x,
+    y,
+    width,
+    height,
+    4
+  );
+
+  const ctx=crop.getContext('2d');
+
+  /*
+    Convert to grayscale.
+  */
+
+  const imageData=ctx.getImageData(
+    0,
+    0,
+    crop.width,
+    crop.height
+  );
+
+  const data=imageData.data;
+
+  for(
+    let i=0;
+    i<data.length;
+    i+=4
+  ){
+
+    const r=data[i];
+    const g=data[i+1];
+    const b=data[i+2];
+
+    /*
+      Standard grayscale.
+    */
+
+    const gray=
+      Math.round(
+        0.299*r+
+        0.587*g+
+        0.114*b
+      );
+
+    data[i]=gray;
+    data[i+1]=gray;
+    data[i+2]=gray;
+  }
+
+  ctx.putImageData(
+    imageData,
+    0,
+    0
+  );
+
+  /*
+    Tesseract is much better when we tell it
+    that this is a single line containing
+    numbers + K/M/B.
+  */
+
+  const w=await getOcrWorker();
+
+  await w.setParameters({
+
+    tessedit_pageseg_mode:'7',
+
+    tessedit_char_whitelist:
+      '0123456789.KMB',
+
+    preserve_interword_spaces:'0'
+
+  });
+
+  const r=await w.recognize(crop);
+
+  const text=String(
+    r.data.text||''
+  )
+    .replace(/\s+/g,'')
+    .trim();
+
+  /*
+    Restore the normal OCR settings afterwards.
+  */
+
+  await w.setParameters({
+
+    tessedit_pageseg_mode:'6',
+
+    tessedit_char_whitelist:'',
+
+    preserve_interword_spaces:'0'
+
+  });
+
+  return{
+    text,
+    power:parsePower(text),
+    confidence:Number(
+      r.data.confidence||0
+    )
+  };
+}
+
+
+/*
+  Find the closest OCR word to a row.
+
+  This is used as a fallback when the normal
+  name detector cannot find a good candidate.
+*/
+function fallbackNameForRow(words,cy){
+
+  let best=null;
+
+  for(const w of words){
+
+    const text=String(w.text||'').trim();
+
+    if(!text)
+      continue;
+
+    const x=Number(w.bbox?.x0||0);
+    const y=Number(w.bbox?.y0||0);
+    const h=
+      Number(w.bbox?.y1||0)-y;
+
+    if(x<145 || x>390)
+      continue;
+
+    if(y<cy-75 || y>cy+15)
+      continue;
+
+    if(
+      /expert|rank|power|this|week|total/i
+        .test(text)
+    ){
+      continue;
+    }
+
+    if(/^[\d.,]+[KMB]?$/i.test(text))
+      continue;
+
+    const distance=
+      Math.abs(
+        (y+h/2)-(cy-20)
+      );
+
+    const score=
+      distance-
+      Number(w.conf||0)*0.02;
+
+    if(!best || score<best.score){
+
+      best={
+        text:cleanOcrName(text),
+        score
+      };
+
+    }
+  }
+
+  return best?.text||'';
+}
+
+
+/*
+  OCR the entire screenshot.
+
+  This is much more reliable than asking OCR
+  to interpret every row independently.
+*/
+async function ocrWholeScreenshot(canvas){
+
+  const w=await getOcrWorker();
+
+  /*
+    Whole screenshot OCR works surprisingly well
+    for the names because Tesseract gets the surrounding
+    visual context.
+  */
+
+  await w.setParameters({
+
+    tessedit_pageseg_mode:'6',
+
+    tessedit_char_whitelist:'',
+
+    preserve_interword_spaces:'0'
+
+  });
+
+  const r=await w.recognize(canvas);
+
+  return{
+    text:String(r.data.text||''),
+    confidence:Number(
+      r.data.confidence||0
+    ),
+    words:r.data.words||[]
+  };
+}
+
+
+/*
+  Main screenshot processor.
+*/
 async function processScreenshot(
   file,
   index,
@@ -1617,6 +2053,11 @@ async function processScreenshot(
     }
   );
 
+
+  /*
+    Copy image into canvas.
+  */
+
   const c=
     document.createElement('canvas');
 
@@ -1636,16 +2077,40 @@ async function processScreenshot(
     );
 
 
-  /* Find Power header */
+  /*
+    -------------------------------------------------------
+    STEP 1
+    OCR whole screenshot
+    -------------------------------------------------------
+  */
 
   e.ocrProgress.textContent=
-    `Screenshot ${index}/${total}: locating Power header…`;
+    `Screenshot ${index}/${total}: reading player names…`;
+
+  const fullOcr=
+    await ocrWholeScreenshot(c);
+
+
+  /*
+    -------------------------------------------------------
+    STEP 2
+    Find Power header
+    -------------------------------------------------------
+  */
+
+  e.ocrProgress.textContent=
+    `Screenshot ${index}/${total}: locating player rows…`;
 
   const header=
     await findPowerHeader(c);
 
 
-  /* Find class-icon column */
+  /*
+    -------------------------------------------------------
+    STEP 3
+    Find class icon column
+    -------------------------------------------------------
+  */
 
   const iconX=
     findIconX(
@@ -1655,7 +2120,12 @@ async function processScreenshot(
     );
 
 
-  /* Find rows */
+  /*
+    -------------------------------------------------------
+    STEP 4
+    Find player rows
+    -------------------------------------------------------
+  */
 
   const rowYs=
     findClassRows(
@@ -1664,10 +2134,16 @@ async function processScreenshot(
       header.bottom
     );
 
+
   const out=[];
 
 
-  /* Process each complete row */
+  /*
+    -------------------------------------------------------
+    STEP 5
+    Process each row
+    -------------------------------------------------------
+  */
 
   for(
     let i=0;
@@ -1676,6 +2152,17 @@ async function processScreenshot(
   ){
 
     const cy=rowYs[i];
+
+    e.ocrProgress.textContent=
+      `Screenshot ${index}/${total}: `+
+      `reading player ${i+1}/${rowYs.length}…`;
+
+
+    /*
+      ---------------------------------------------------
+      CLASS
+      ---------------------------------------------------
+    */
 
     const cls=
       classifyIcon(
@@ -1688,55 +2175,108 @@ async function processScreenshot(
       continue;
 
 
-    e.ocrProgress.textContent=
-      `Screenshot ${index}/${total}: `+
-      `reading player ${i+1}/${rowYs.length}…`;
-
-
     /*
-      IMPORTANT:
-
-      We only OCR this small rectangle:
-
-      class icon | NAME
-                  power
-
-      Everything else in the row is ignored.
+      ---------------------------------------------------
+      NAME
+      ---------------------------------------------------
     */
 
-    const rowCrop=
-      cropCanvas(
-        c,
-        iconX+18,
-        cy-34,
-        245,
-        105,
-        3
+    let name=
+      findNameForRow(
+        fullOcr.words,
+        cy
       );
 
-    const r=
-      await ocr(rowCrop);
-
-    const p=
-      parsePower(r.text);
-
     /*
-      If there is no valid power value,
-      this is probably the incomplete
-      player at the bottom of the screenshot.
+      Fallback if the normal detector fails.
     */
 
-    if(p===null)
-      continue;
+    if(!name){
 
-    const name=
-      cleanName(r.text);
+      name=
+        fallbackNameForRow(
+          fullOcr.words,
+          cy
+        );
+
+    }
+
 
     if(!name)
       continue;
 
+
+    /*
+      ---------------------------------------------------
+      POWER
+      ---------------------------------------------------
+
+      We now OCR ONLY the power number.
+
+      This avoids the crossed-swords icon confusing
+      Tesseract.
+    */
+
+    const powerResult=
+      await readPowerForRow(
+        c,
+        cy
+      );
+
+    if(
+      !powerResult ||
+      powerResult.power===null
+    ){
+
+      /*
+        This is probably the partially visible
+        player at the bottom of the screenshot.
+      */
+
+      continue;
+    }
+
+
+    /*
+      ---------------------------------------------------
+      MATCH AGAINST EXISTING ROSTER
+      ---------------------------------------------------
+    */
+
     const match=
       findMatch(name);
+
+
+    /*
+      ---------------------------------------------------
+      CONFIDENCE
+      ---------------------------------------------------
+    */
+
+    const nameConfidence=
+      (()=>{
+
+        const candidate=
+          fullOcr.words.find(w=>
+            cleanOcrName(w.text)===name
+          );
+
+        return Number(
+          candidate?.conf||0
+        );
+
+      })();
+
+
+    const confidence=
+      Math.round(
+        (
+          (nameConfidence/100)*.40 +
+          (powerResult.confidence/100)*.35 +
+          cls.confidence*.25
+        )*100
+      );
+
 
     out.push({
 
@@ -1744,7 +2284,7 @@ async function processScreenshot(
 
       class:cls.class,
 
-      power:p,
+      power:powerResult.power,
 
       matchId:
         match?.member.id || '',
@@ -1752,24 +2292,20 @@ async function processScreenshot(
       matchScore:
         match?.score || 0,
 
-      confidence:
-        Math.round(
-          (
-            (r.confidence||0)/100*.55 +
-            cls.confidence*.45
-          )*100
-        ),
+      confidence,
 
       source:file.name,
 
-      ocr:r.text
+      ocr:
+        `${name} ${powerResult.text}`
 
     });
+
   }
+
 
   return out;
 }
-
 
 /* =========================================================
    MERGE DUPLICATE SCREENSHOT RESULTS
