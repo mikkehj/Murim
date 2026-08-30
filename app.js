@@ -55,6 +55,12 @@
     clearScreenshots: $('clearScreenshots')
   };
 
+  // Make the screenshot review dialog wider
+  if (e.screenshotDialog) {
+    e.screenshotDialog.style.width = 'min(1100px, 96vw)';
+    e.screenshotDialog.style.maxWidth = '1100px';
+  }
+
   /* =========================================================
      STORAGE
   ========================================================= */
@@ -478,14 +484,14 @@
   }
 
   function parsePower(text) {
-    // Aggressively strip leading garbage that the sword/staff icon produces
+    // Strip leading garbage that the black sword/staff icon often produces
     let s = String(text || '')
       .replace(/,/g, '.')
       .replace(/\s+/g, '')
-      .replace(/^[^0-9]*/, '');          // remove everything before the first digit
+      .replace(/^[^0-9]*/, ''); // everything before first digit
 
-    // Common OCR mistakes from the black icon
-    s = s.replace(/^[9R%K]+(?=\d)/i, '');  // leading 9 / R / % / K before a digit
+    // Common OCR mistakes from the icon
+    s = s.replace(/^[9R%K]+(?=\d)/i, '');
 
     const m = s.match(/(\d+(?:\.\d+)?)\s*([KMB])/i);
     if (!m) return null;
@@ -576,47 +582,66 @@
   }
 
   /* =========================================================
-     CLASS FROM ICON COLOR (sampled left of name)
+     CLASS ICON – scan LEFT from the name until we hit a colored icon
+     Red = Berserker | Orange = Paladin | Green = Arcanist | Blue = Archmage
   ========================================================= */
-  function classifyIcon(canvas, cx, cy) {
+  function classifyIcon(canvas, nameX, nameY) {
     const ctx = canvas.getContext('2d');
-    const size = 14;
-    const x0 = Math.max(0, Math.floor(cx - size));
-    const y0 = Math.max(0, Math.floor(cy - size));
-    const w = Math.min(size * 2 + 1, canvas.width - x0);
-    const h = Math.min(size * 2 + 1, canvas.height - y0);
-    const data = ctx.getImageData(x0, y0, w, h).data;
+    const startX = Math.floor(nameX);
+    const cy = Math.round(nameY);
+    const searchLeft = Math.max(40, startX - 140);
 
-    const counts = { Berserker: 0, Paladin: 0, Arcanist: 0, Archmage: 0 };
-    let total = 0;
+    for (let x = startX - 8; x >= searchLeft; x -= 3) {
+      const size = 13;
+      const x0 = Math.max(0, x - size);
+      const y0 = Math.max(0, cy - size);
+      const w = Math.min(size * 2 + 1, canvas.width - x0);
+      const h = Math.min(size * 2 + 1, canvas.height - y0);
 
-    for (let i = 0; i < data.length; i += 4) {
-      const [hue, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
-      if (s < 0.26 || v < 0.48) continue;
-      total++;
-      if (hue < 18 || hue > 345) counts.Berserker++;
-      else if (hue >= 18 && hue < 65) counts.Paladin++;
-      else if (hue >= 65 && hue < 175) counts.Arcanist++;
-      else if (hue >= 175 && hue < 280) counts.Archmage++;
+      const data = ctx.getImageData(x0, y0, w, h).data;
+      const counts = { Berserker: 0, Paladin: 0, Arcanist: 0, Archmage: 0 };
+      let total = 0;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const [hue, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
+        if (s < 0.28 || v < 0.45) continue;
+        total++;
+        if (hue < 18 || hue > 345) counts.Berserker++; // red
+        else if (hue >= 18 && hue < 65) counts.Paladin++; // orange
+        else if (hue >= 65 && hue < 175) counts.Arcanist++; // green
+        else if (hue >= 175 && hue < 280) counts.Archmage++; // blue
+      }
+
+      if (total < 8) continue;
+
+      const best = CLASSES.reduce((a, b) => (counts[b] > counts[a] ? b : a), CLASSES[0]);
+      const ratio = counts[best] / total;
+
+      if (ratio >= 0.42) {
+        return {
+          class: best,
+          confidence: ratio,
+          iconX: x // used later to calculate power offset
+        };
+      }
     }
 
-    if (total < 6) return { class: null, confidence: 0 };
-    const best = CLASSES.reduce((a, b) => (counts[b] > counts[a] ? b : a), CLASSES[0]);
-    const ratio = counts[best] / total;
-    return ratio >= 0.40
-      ? { class: best, confidence: ratio }
-      : { class: null, confidence: ratio };
+    return { class: null, confidence: 0, iconX: null };
   }
 
   /* =========================================================
-     DEDICATED POWER OCR (under the name)
+     POWER – start AFTER the class icon so we skip the black sword/staff
   ========================================================= */
-  async function readPowerNearName(canvas, nameX, nameY) {
-    // Start further right to avoid the black sword/staff icon
-    // On the screenshots the real number usually begins ~40–55 px after the name start
-    const x = Math.max(0, Math.floor(nameX + 35));
+  async function readPowerNearName(canvas, nameX, nameY, iconX) {
+    // How far is the class icon from the name?
+    let offset = 40; // safe fallback
+    if (iconX !== null && iconX < nameX) {
+      offset = Math.max(35, Math.round(nameX - iconX) + 18);
+    }
+
+    const x = Math.max(0, Math.floor(nameX + offset));
     const y = Math.max(0, Math.floor(nameY + 42));
-    const width = Math.min(150, canvas.width - x);
+    const width = Math.min(160, canvas.width - x);
     const height = Math.min(48, canvas.height - y);
 
     if (width < 25 || height < 12) return null;
@@ -626,7 +651,7 @@
     const imageData = ctx.getImageData(0, 0, crop.width, crop.height);
     const d = imageData.data;
 
-    // Strong threshold – helps kill the black icon remnants
+    // Strong threshold – kills remaining dark icon pixels
     for (let i = 0; i < d.length; i += 4) {
       const gray = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
       const v = gray < 150 ? 0 : 255;
@@ -661,7 +686,7 @@
   }
 
   /* =========================================================
-     MAIN SCREENSHOT PROCESSOR (new robust pipeline)
+     MAIN SCREENSHOT PROCESSOR
   ========================================================= */
   async function processScreenshot(file, index, total) {
     const img = await new Promise((resolve, reject) => {
@@ -707,7 +732,6 @@
       const ww = Number(w.bbox?.x1 || 0) - x;
       const hh = Number(w.bbox?.y1 || 0) - y;
 
-      // Names live in this horizontal band on the provided screenshots
       if (x < 140 || x > 520) continue;
       if (y < 280 || y > c.height - 120) continue;
 
@@ -726,10 +750,9 @@
       });
     }
 
-    // Sort top → bottom
     nameCandidates.sort((a, b) => a.y - b.y || a.x - b.x);
 
-    // Merge horizontally adjacent fragments that belong to the same name
+    // Merge horizontally adjacent fragments
     const merged = [];
     for (const cand of nameCandidates) {
       const last = merged[merged.length - 1];
@@ -746,7 +769,7 @@
       }
     }
 
-    // Further collapse vertical near-duplicates (OCR sometimes returns the same name twice)
+    // Collapse vertical near-duplicates
     const uniqueNames = [];
     for (const m of merged) {
       const prev = uniqueNames[uniqueNames.length - 1];
@@ -765,17 +788,15 @@
         uniqueNames.length
       }…`;
 
-      // Class icon is a little left of the name
-      const iconX = Math.max(120, nm.x - 45);
-      const iconY = Math.round(nm.cy);
-      const cls = classifyIcon(c, iconX, iconY);
+      // Class: start at name X and walk LEFT until we find a colored icon
+      const cls = classifyIcon(c, nm.x, nm.cy);
       if (!cls.class) continue;
 
-      // Power under the name
-      const powerResult = await readPowerNearName(c, nm.x, nm.y);
+      // Power: start after the class icon so we skip the black sword/staff
+      const powerResult = await readPowerNearName(c, nm.x, nm.y, cls.iconX);
       if (!powerResult || powerResult.power === null) continue;
 
-      // Skip extremely low-confidence power reads (usually half-visible bottom row)
+      // Skip very low-confidence power on half-visible bottom rows
       if (powerResult.confidence < 25 && powerResult.power < 500000) continue;
 
       const match = findMatch(nm.text);
