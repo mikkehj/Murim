@@ -478,13 +478,21 @@
   }
 
   function parsePower(text) {
-    const s = String(text || '')
+    // Aggressively strip leading garbage that the sword/staff icon produces
+    let s = String(text || '')
       .replace(/,/g, '.')
-      .replace(/\s+/g, '');
+      .replace(/\s+/g, '')
+      .replace(/^[^0-9]*/, '');          // remove everything before the first digit
+
+    // Common OCR mistakes from the black icon
+    s = s.replace(/^[9R%K]+(?=\d)/i, '');  // leading 9 / R / % / K before a digit
+
     const m = s.match(/(\d+(?:\.\d+)?)\s*([KMB])/i);
     if (!m) return null;
+
     const n = Number(m[1]);
     if (!Number.isFinite(n)) return null;
+
     const mult = { K: 1e3, M: 1e6, B: 1e9 }[m[2].toUpperCase()];
     return Math.round(n * mult);
   }
@@ -604,22 +612,24 @@
      DEDICATED POWER OCR (under the name)
   ========================================================= */
   async function readPowerNearName(canvas, nameX, nameY) {
-    // Power sits roughly 45–70 px below the name baseline on these screenshots
-    const x = Math.max(0, Math.floor(nameX - 10));
+    // Start further right to avoid the black sword/staff icon
+    // On the screenshots the real number usually begins ~40–55 px after the name start
+    const x = Math.max(0, Math.floor(nameX + 35));
     const y = Math.max(0, Math.floor(nameY + 42));
-    const width = Math.min(170, canvas.width - x);
+    const width = Math.min(150, canvas.width - x);
     const height = Math.min(48, canvas.height - y);
-    if (width < 20 || height < 12) return null;
+
+    if (width < 25 || height < 12) return null;
 
     let crop = cropCanvas(canvas, x, y, width, height, 4);
     const ctx = crop.getContext('2d');
     const imageData = ctx.getImageData(0, 0, crop.width, crop.height);
     const d = imageData.data;
 
-    // Grayscale + hard threshold (helps Tesseract a lot on this font)
+    // Strong threshold – helps kill the black icon remnants
     for (let i = 0; i < d.length; i += 4) {
       const gray = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
-      const v = gray < 145 ? 0 : 255;
+      const v = gray < 150 ? 0 : 255;
       d[i] = d[i + 1] = d[i + 2] = v;
     }
     ctx.putImageData(imageData, 0, 0);
@@ -630,7 +640,9 @@
       tessedit_char_whitelist: '0123456789.KMB',
       preserve_interword_spaces: '0'
     });
+
     const r = await w.recognize(crop);
+
     await w.setParameters({
       tessedit_pageseg_mode: '6',
       tessedit_char_whitelist: '',
@@ -640,6 +652,7 @@
     const text = String(r.data.text || '')
       .replace(/\s+/g, '')
       .trim();
+
     return {
       text,
       power: parsePower(text),
