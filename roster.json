@@ -7,7 +7,7 @@
       "id": "003f9d05-a3cd-441f-a3d1-2586c352c40e",
       "name": "Nephew",
       "class": "Berserker",
-      "power": 4390000,
+      "power": 4460000,
       "notes": "Cult Leader"
     },
     {
@@ -56,7 +56,7 @@
       "id": "9bdde669-0929-4594-99d1-d42f07519fa8",
       "name": "BrotherBawk",
       "class": "Archmage",
-      "power": 4170000,
+      "power": 4230000,
       "notes": ""
     },
     {
@@ -102,6 +102,13 @@
       "notes": ""
     },
     {
+      "id": "57b8d6a7-2dee-4eaf-937a-26d6228bc724",
+      "name": "Envy",
+      "class": "Arcanist",
+      "power": 4180000,
+      "notes": ""
+    },
+    {
       "id": "e84ca0d5-99ab-402d-a81d-1095081e5216",
       "name": "FatherZ",
       "class": "Berserker",
@@ -119,7 +126,7 @@
       "id": "58448ce9-1f19-45a8-9e0c-862e049439fa",
       "name": "Fidibus",
       "class": "Berserker",
-      "power": 4160000,
+      "power": 4310000,
       "notes": ""
     },
     {
@@ -175,7 +182,7 @@
       "id": "5165617e-5b0f-4e51-b3e8-a3b6603ee5a1",
       "name": "Mistaluva",
       "class": "Paladin",
-      "power": 3730000,
+      "power": 4040000,
       "notes": ""
     },
     {
@@ -189,7 +196,7 @@
       "id": "8bbce437-5e23-42ca-afe1-f639ec990009",
       "name": "Papi",
       "class": "Paladin",
-      "power": 4520000,
+      "power": 4820000,
       "notes": ""
     },
     {
@@ -203,7 +210,7 @@
       "id": "44c105f4-9376-4b81-87fc-0768755fe24c",
       "name": "Ragen",
       "class": "Archmage",
-      "power": 3950000,
+      "power": 3960000,
       "notes": ""
     },
     {
@@ -218,13 +225,6 @@
       "name": "Razan",
       "class": "Berserker",
       "power": 2220000,
-      "notes": ""
-    },
-    {
-      "id": "57b8d6a7-2dee-4eaf-937a-26d6228bc724",
-      "name": "Envy",
-      "class": "Arcanist",
-      "power": 4170000,
       "notes": ""
     },
     {
@@ -301,7 +301,7 @@
       "id": "4b494925-41a6-4633-9c45-ba58e0e530e5",
       "name": "Uncle",
       "class": "Arcanist",
-      "power": 4680000,
+      "power": 5140000,
       "notes": ""
     },
     {
@@ -315,7 +315,7 @@
       "id": "0e14c3bf-3126-453a-8faa-b3b905d425f6",
       "name": "UncOG",
       "class": "Paladin",
-      "power": 3720000,
+      "power": 4330000,
       "notes": ""
     },
     {
