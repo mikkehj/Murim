@@ -15,7 +15,6 @@
     <span class="orb orb-2"></span>
     <span class="orb orb-3"></span>
   </div>
-
   <header>
     <div class="brand">
       <div class="logo" aria-hidden="true">⚔</div>
@@ -32,10 +31,8 @@
       <button id="importBtn">Load from GitHub</button>
     </nav>
   </header>
-
   <main>
     <div id="status" class="status">Viewer mode — roster and teams are read-only.</div>
-
     <section class="stats">
       <div class="stat-card">
         <div class="stat-icon">👥</div>
@@ -66,12 +63,11 @@
         </div>
       </div>
     </section>
-
     <section class="panel">
       <div class="head">
         <div>
           <h2>Guild Roster</h2>
-          <p>Manage members and inspect team assignments.</p>
+          <p>Manage members and inspect team assignments. Only players with <strong>4v4</strong> checked are used by the team generator.</p>
         </div>
         <button id="addBtn" class="primary" hidden>＋ Add Member</button>
       </div>
@@ -96,6 +92,7 @@
         <table>
           <thead>
             <tr>
+              <th class="col-4v4">4v4</th>
               <th>Player</th>
               <th>Class</th>
               <th>Power</th>
@@ -111,12 +108,11 @@
         <p>No guild members match the current filters.</p>
       </div>
     </section>
-
     <section class="panel">
       <div class="head">
         <div>
           <h2>Team Builder</h2>
-          <p>Strongest player of each class forms Team 1, then second-strongest forms Team 2, etc.</p>
+          <p>Strongest eligible player of each class forms Team 1, then second-strongest forms Team 2, etc. Only members with <strong>4v4</strong> enabled are included.</p>
         </div>
         <button id="generate" class="primary" hidden>⚔ Generate Ranked Teams</button>
       </div>
@@ -127,11 +123,9 @@
       </div>
     </section>
   </main>
-
   <footer>
     <p>Sword × Staff Guild Planner · Built for the Murim</p>
   </footer>
-
   <dialog id="login">
     <form id="loginForm" class="dialog">
       <button type="button" class="x" data-close="login">×</button>
@@ -143,7 +137,6 @@
       <button class="primary" type="submit">Login</button>
     </form>
   </dialog>
-
   <dialog id="memberDialog">
     <form id="memberForm" class="dialog">
       <button type="button" class="x" data-close="memberDialog">×</button>
@@ -161,6 +154,10 @@
         </select>
       </label>
       <label>Power<input id="memberPower" type="number" min="0" step="1" required></label>
+      <label class="checkbox-label">
+        <input id="memberFourV4" type="checkbox" checked>
+        <span>Include in 4v4 team generator</span>
+      </label>
       <label>Notes <small>(optional)</small><textarea id="memberNotes" maxlength="500"></textarea></label>
       <div class="dialog-actions">
         <button type="button" data-close="memberDialog">Cancel</button>
@@ -168,11 +165,8 @@
       </div>
     </form>
   </dialog>
-
   <dialog id="screenshotDialog">
-
     <form class="dialog" onsubmit="return false">
-
       <button
         type="button"
         class="x"
@@ -180,25 +174,19 @@
       >
         ×
       </button>
-
       <div class="dialog-icon">📷</div>
-
       <h2>Update Roster from Screenshots</h2>
-
       <p>
         Upload the Guildmates screenshots from Sword × Staff.
         You can select all 6 screenshots at once.
       </p>
-
       <p class="muted">
         The importer reads only the class icon, player name,
         and power. Incomplete players at the bottom of a
         screenshot are automatically ignored.
       </p>
-
       <label>
         Guild screenshots
-
         <input
           id="screenshotFiles"
           type="file"
@@ -206,7 +194,6 @@
           multiple
         >
       </label>
-
       <div
         id="ocrProgress"
         class="status"
@@ -215,12 +202,10 @@
         Choose your screenshots, then click
         Process Screenshots.
       </div>
-
       <div
         id="ocrSummary"
         style="margin-top:12px"
       ></div>
-
       <div
         id="ocrResults"
         style="
@@ -229,16 +214,13 @@
           overflow:auto;
         "
       ></div>
-
       <div class="dialog-actions">
-
         <button
           type="button"
           id="clearScreenshots"
         >
           Clear
         </button>
-
         <button
           type="button"
           data-process-screenshots
@@ -246,7 +228,6 @@
         >
           🔎 Process Screenshots
         </button>
-
         <button
           type="button"
           id="applyScreenshots"
@@ -255,13 +236,9 @@
         >
           ✓ Apply Changes
         </button>
-
       </div>
-
     </form>
-
   </dialog>
-
   <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
   <script src="app.js"></script>
 </body>
