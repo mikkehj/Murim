@@ -1,18 +1,14 @@
 (() => {
   'use strict';
-
   const KEY = 'sxs_guild_planner_v4';
   const SESSION = 'sxs_guild_master_v4';
   const CLASSES = ['Berserker', 'Paladin', 'Archmage', 'Arcanist'];
-
   let state = load();
   let master = sessionStorage.getItem(SESSION) === 'true';
   let ocrWorker = null;
   let ocrBusy = false;
   let pendingRows = [];
-
   const $ = id => document.getElementById(id);
-
   const e = {
     loginBtn: $('loginBtn'),
     logoutBtn: $('logoutBtn'),
@@ -45,6 +41,7 @@
     memberName: $('memberName'),
     memberClass: $('memberClass'),
     memberPower: $('memberPower'),
+    memberFourV4: $('memberFourV4'),
     memberNotes: $('memberNotes'),
     screenshotDialog: $('screenshotDialog'),
     screenshotFiles: $('screenshotFiles'),
@@ -54,63 +51,73 @@
     applyScreenshots: $('applyScreenshots'),
     clearScreenshots: $('clearScreenshots')
   };
-
   // Make the screenshot review dialog wider
   if (e.screenshotDialog) {
     e.screenshotDialog.style.width = 'min(1100px, 96vw)';
     e.screenshotDialog.style.maxWidth = '1100px';
   }
-
   /* =========================================================
      STORAGE
   ========================================================= */
+  function normalizeMember(m) {
+    return {
+      id: String(m.id || uid()),
+      name: String(m.name || '').trim(),
+      class: m.class,
+      power: Number(m.power),
+      notes: String(m.notes || ''),
+      // Default to true so existing rosters stay eligible for teams
+      fourV4: m.fourV4 !== false
+    };
+  }
   function load() {
     try {
       const x = JSON.parse(localStorage.getItem(KEY) || 'null');
       if (x && Array.isArray(x.members)) {
         return {
-          members: x.members,
+          members: x.members.map(normalizeMember).filter(
+            m =>
+              m.name &&
+              CLASSES.includes(m.class) &&
+              Number.isFinite(m.power) &&
+              m.power >= 0
+          ),
           teams: Array.isArray(x.teams) ? x.teams : []
         };
       }
     } catch (_) {}
     return { members: [], teams: [] };
   }
-
   function save() {
     localStorage.setItem(KEY, JSON.stringify(state));
   }
-
   function uid() {
     return crypto.randomUUID
       ? crypto.randomUUID()
       : Date.now().toString(36) + Math.random().toString(36).slice(2);
   }
-
   function power(n) {
     return Number(n || 0).toLocaleString('en-US');
   }
-
   function esc(v) {
     return String(v ?? '').replace(/[&<>"']/g, c =>
       ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])
     );
   }
-
   /* =========================================================
-     TEAM GENERATION
+     TEAM GENERATION — only members with fourV4 === true
   ========================================================= */
   function gen(ms) {
-    const paladins = ms
+    const eligible = ms.filter(m => m.fourV4 !== false);
+    const paladins = eligible
       .filter(m => m.class === 'Paladin')
       .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
-    const arcanists = ms
+    const arcanists = eligible
       .filter(m => m.class === 'Arcanist')
       .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
-    const dps = ms
+    const dps = eligible
       .filter(m => m.class === 'Berserker' || m.class === 'Archmage')
       .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
-
     const teamCount = Math.min(15, paladins.length, arcanists.length, Math.floor(dps.length / 2));
     const out = [];
     for (let i = 0; i < teamCount; i++) {
@@ -121,7 +128,6 @@
     }
     return out;
   }
-
   /* =========================================================
      DISPLAY
   ========================================================= */
@@ -130,11 +136,9 @@
     state.teams.forEach(t => (t.playerIds || []).forEach(id => m.set(id, t.number)));
     return m;
   }
-
   function classBadge(cls) {
     return `<span class="badge ${esc(cls)}">${esc(cls)}</span>`;
   }
-
   function render() {
     e.loginBtn.hidden = master;
     e.logoutBtn.hidden = !master;
@@ -145,13 +149,12 @@
     e.generate.hidden = !master;
     e.status.className = 'status' + (master ? ' master' : '');
     e.status.textContent = master
-      ? 'Master mode — edit, generate, export, or update the roster from screenshots.'
+      ? 'Master mode — edit, generate, export, or update the roster from screenshots. Toggle 4v4 to include/exclude players from teams.'
       : 'Viewer mode — roster and teams are read-only.';
     stats();
     roster();
     teams();
   }
-
   function stats() {
     const total = state.members.reduce((s, m) => s + Number(m.power || 0), 0);
     const tm = teamMap();
@@ -162,7 +165,6 @@
       : '0';
     e.unassigned.textContent = state.members.filter(m => !tm.has(m.id)).length;
   }
-
   function roster() {
     const q = e.search.value.trim().toLowerCase();
     const cf = e.classFilter.value;
@@ -184,8 +186,20 @@
     );
     e.roster.innerHTML = rows
       .map(
-        m => `
-      <tr>
+        m => {
+          const included = m.fourV4 !== false;
+          return `
+      <tr class="${included ? '' : 'excluded-4v4'}">
+        <td class="col-4v4">
+          <input
+            type="checkbox"
+            class="fourv4-check"
+            data-fourv4="${m.id}"
+            ${included ? 'checked' : ''}
+            ${master ? '' : 'disabled'}
+            title="${included ? 'Included in 4v4 teams' : 'Excluded from 4v4 teams'}"
+          >
+        </td>
         <td>
           <b>${esc(m.name)}</b>
           ${m.notes ? `<div class="muted">${esc(m.notes)}</div>` : ''}
@@ -205,12 +219,12 @@
             <button class="mini danger" data-delete="${m.id}">Delete</button>
           </div>
         </td>
-      </tr>`
+      </tr>`;
+        }
       )
       .join('');
     e.empty.hidden = rows.length > 0;
   }
-
   function teams() {
     e.noTeams.hidden = state.teams.length > 0;
     e.teams.innerHTML = state.teams
@@ -260,18 +274,17 @@
       })
       .join('');
   }
-
   /* =========================================================
      MEMBER EDITING
   ========================================================= */
   function openAdd() {
     e.memberForm.reset();
     e.memberId.value = '';
+    e.memberFourV4.checked = true;
     e.memberTitle.textContent = 'Add Member';
     e.memberDialog.showModal();
     e.memberName.focus();
   }
-
   function openEdit(id) {
     const m = state.members.find(x => x.id === id);
     if (!m) return;
@@ -279,11 +292,11 @@
     e.memberName.value = m.name;
     e.memberClass.value = m.class;
     e.memberPower.value = m.power;
+    e.memberFourV4.checked = m.fourV4 !== false;
     e.memberNotes.value = m.notes || '';
     e.memberTitle.textContent = 'Edit Member';
     e.memberDialog.showModal();
   }
-
   /* =========================================================
      LOGIN / MEMBER EVENTS
   ========================================================= */
@@ -293,22 +306,18 @@
     e.login.showModal();
     e.user.focus();
   };
-
   e.logoutBtn.onclick = () => {
     master = false;
     sessionStorage.removeItem(SESSION);
     render();
   };
-
   e.addBtn.onclick = openAdd;
-
   e.generate.onclick = () => {
     if (!master) return;
     state.teams = gen(state.members);
     save();
     render();
   };
-
   e.loginForm.onsubmit = x => {
     x.preventDefault();
     if (e.user.value === 'Mika' && e.pass.value === 'EvilEnvy') {
@@ -320,7 +329,6 @@
       e.loginError.hidden = false;
     }
   };
-
   e.memberForm.onsubmit = x => {
     x.preventDefault();
     if (!master) return;
@@ -328,23 +336,36 @@
     const cls = e.memberClass.value;
     const p = Number(e.memberPower.value);
     const notes = e.memberNotes.value.trim();
+    const fourV4 = e.memberFourV4.checked;
     if (!name || !CLASSES.includes(cls) || !Number.isFinite(p) || p < 0) return;
     const id = e.memberId.value;
     if (id) {
       const m = state.members.find(x => x.id === id);
-      if (m) Object.assign(m, { name, class: cls, power: p, notes });
+      if (m) Object.assign(m, { name, class: cls, power: p, notes, fourV4 });
     } else {
-      state.members.push({ id: uid(), name, class: cls, power: p, notes });
+      state.members.push({ id: uid(), name, class: cls, power: p, notes, fourV4 });
     }
     state.teams = [];
     save();
     e.memberDialog.close();
     render();
   };
-
   e.roster.onclick = x => {
     const ed = x.target.closest('[data-edit]');
     const del = x.target.closest('[data-delete]');
+    const four = x.target.closest('[data-fourv4]');
+    if (four && master) {
+      const id = four.dataset.fourv4;
+      const m = state.members.find(z => z.id === id);
+      if (m) {
+        m.fourV4 = four.checked;
+        // Clear teams so user must regenerate with the new eligibility
+        state.teams = [];
+        save();
+        render();
+      }
+      return;
+    }
     if (ed && master) openEdit(ed.dataset.edit);
     if (del && master) {
       const m = state.members.find(z => z.id === del.dataset.delete);
@@ -361,7 +382,6 @@
       }
     }
   };
-
   /* =========================================================
      EXPORT
   ========================================================= */
@@ -381,7 +401,6 @@
     a.click();
     URL.revokeObjectURL(a.href);
   };
-
   /* =========================================================
      LOAD FROM GITHUB
   ========================================================= */
@@ -395,13 +414,7 @@
       const data = await r.json();
       if (!Array.isArray(data.members)) throw Error('Invalid roster');
       const members = data.members
-        .map(m => ({
-          id: String(m.id || uid()),
-          name: String(m.name || '').trim(),
-          class: m.class,
-          power: Number(m.power),
-          notes: String(m.notes || '')
-        }))
+        .map(normalizeMember)
         .filter(
           m =>
             m.name &&
@@ -433,7 +446,6 @@
     }
   }
   e.importBtn.onclick = () => loadFromGitHub(false);
-
   /* =========================================================
      NAME / POWER / CLASS HELPERS
   ========================================================= */
@@ -444,7 +456,6 @@
       .replace(/[\u0300-\u036f]/g, '')
       .replace(/[^a-z0-9]/g, '');
   }
-
   function similarity(a, b) {
     a = normalizeName(a);
     b = normalizeName(b);
@@ -465,7 +476,6 @@
     }
     return 1 - prev[b.length] / Math.max(a.length, b.length);
   }
-
   function findMatch(name) {
     const n = normalizeName(name);
     if (!n) return null;
@@ -482,27 +492,21 @@
     });
     return best && bestScore >= 0.72 ? { member: best, score: bestScore, exact: false } : null;
   }
-
   function parsePower(text) {
     // Strip leading garbage that the black sword/staff icon often produces
     let s = String(text || '')
       .replace(/,/g, '.')
       .replace(/\s+/g, '')
       .replace(/^[^0-9]*/, ''); // everything before first digit
-
     // Common OCR mistakes from the icon
     s = s.replace(/^[9R%K]+(?=\d)/i, '');
-
     const m = s.match(/(\d+(?:\.\d+)?)\s*([KMB])/i);
     if (!m) return null;
-
     const n = Number(m[1]);
     if (!Number.isFinite(n)) return null;
-
     const mult = { K: 1e3, M: 1e6, B: 1e9 }[m[2].toUpperCase()];
     return Math.round(n * mult);
   }
-
   function cleanOcrName(text) {
     let s = String(text || '')
       .replace(/\r/g, ' ')
@@ -523,7 +527,6 @@
     if (/^[\d.,%]+[KMB]?$/i.test(s)) return '';
     return s;
   }
-
   function rgbToHsv(r, g, b) {
     r /= 255;
     g /= 255;
@@ -543,7 +546,6 @@
     }
     return [h, s, v];
   }
-
   function cropCanvas(source, x, y, w, h, scale = 3) {
     x = Math.max(0, Math.floor(x));
     y = Math.max(0, Math.floor(y));
@@ -557,7 +559,6 @@
     ctx.drawImage(source, x, y, w, h, 0, 0, c.width, c.height);
     return c;
   }
-
   /* =========================================================
      TESSERACT
   ========================================================= */
@@ -580,7 +581,6 @@
     }
     return ocrWorker;
   }
-
   /* =========================================================
      CLASS ICON – scan LEFT from the name until we hit a colored icon
      Red = Berserker | Orange = Paladin | Green = Arcanist | Blue = Archmage
@@ -590,18 +590,15 @@
     const startX = Math.floor(nameX);
     const cy = Math.round(nameY);
     const searchLeft = Math.max(40, startX - 140);
-
     for (let x = startX - 8; x >= searchLeft; x -= 3) {
       const size = 13;
       const x0 = Math.max(0, x - size);
       const y0 = Math.max(0, cy - size);
       const w = Math.min(size * 2 + 1, canvas.width - x0);
       const h = Math.min(size * 2 + 1, canvas.height - y0);
-
       const data = ctx.getImageData(x0, y0, w, h).data;
       const counts = { Berserker: 0, Paladin: 0, Arcanist: 0, Archmage: 0 };
       let total = 0;
-
       for (let i = 0; i < data.length; i += 4) {
         const [hue, s, v] = rgbToHsv(data[i], data[i + 1], data[i + 2]);
         if (s < 0.28 || v < 0.45) continue;
@@ -611,12 +608,9 @@
         else if (hue >= 65 && hue < 175) counts.Arcanist++; // green
         else if (hue >= 175 && hue < 280) counts.Archmage++; // blue
       }
-
       if (total < 8) continue;
-
       const best = CLASSES.reduce((a, b) => (counts[b] > counts[a] ? b : a), CLASSES[0]);
       const ratio = counts[best] / total;
-
       if (ratio >= 0.42) {
         return {
           class: best,
@@ -625,10 +619,8 @@
         };
       }
     }
-
     return { class: null, confidence: 0, iconX: null };
   }
-
   /* =========================================================
      POWER – start AFTER the class icon so we skip the black sword/staff
   ========================================================= */
@@ -638,19 +630,15 @@
     if (iconX !== null && iconX < nameX) {
       offset = Math.max(35, Math.round(nameX - iconX) + 18);
     }
-
     const x = Math.max(0, Math.floor(nameX + offset));
     const y = Math.max(0, Math.floor(nameY + 42));
     const width = Math.min(160, canvas.width - x);
     const height = Math.min(48, canvas.height - y);
-
     if (width < 25 || height < 12) return null;
-
     let crop = cropCanvas(canvas, x, y, width, height, 4);
     const ctx = crop.getContext('2d');
     const imageData = ctx.getImageData(0, 0, crop.width, crop.height);
     const d = imageData.data;
-
     // Strong threshold – kills remaining dark icon pixels
     for (let i = 0; i < d.length; i += 4) {
       const gray = Math.round(0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2]);
@@ -658,33 +646,27 @@
       d[i] = d[i + 1] = d[i + 2] = v;
     }
     ctx.putImageData(imageData, 0, 0);
-
     const w = await getOcrWorker();
     await w.setParameters({
       tessedit_pageseg_mode: '7',
       tessedit_char_whitelist: '0123456789.KMB',
       preserve_interword_spaces: '0'
     });
-
     const r = await w.recognize(crop);
-
     await w.setParameters({
       tessedit_pageseg_mode: '6',
       tessedit_char_whitelist: '',
       preserve_interword_spaces: '0'
     });
-
     const text = String(r.data.text || '')
       .replace(/\s+/g, '')
       .trim();
-
     return {
       text,
       power: parsePower(text),
       confidence: Number(r.data.confidence || 0)
     };
   }
-
   /* =========================================================
      MAIN SCREENSHOT PROCESSOR
   ========================================================= */
@@ -702,14 +684,11 @@
       };
       im.src = u;
     });
-
     const c = document.createElement('canvas');
     c.width = img.naturalWidth || img.width;
     c.height = img.naturalHeight || img.height;
     c.getContext('2d').drawImage(img, 0, 0);
-
     e.ocrProgress.textContent = `Screenshot ${index}/${total}: reading all text…`;
-
     const worker = await getOcrWorker();
     await worker.setParameters({
       tessedit_pageseg_mode: '6',
@@ -718,7 +697,6 @@
     });
     const full = await worker.recognize(c);
     const words = full.data.words || [];
-
     // ---- Collect name candidates ----
     const nameCandidates = [];
     for (const w of words) {
@@ -726,19 +704,15 @@
       if (!text) continue;
       const conf = Number(w.confidence || w.conf || 0);
       if (conf < 35) continue;
-
       const x = Number(w.bbox?.x0 || 0);
       const y = Number(w.bbox?.y0 || 0);
       const ww = Number(w.bbox?.x1 || 0) - x;
       const hh = Number(w.bbox?.y1 || 0) - y;
-
       if (x < 140 || x > 520) continue;
       if (y < 280 || y > c.height - 120) continue;
-
       const cleaned = cleanOcrName(text);
       if (!cleaned || cleaned.length < 2) continue;
       if (/expert|rank|power|this|week|total|online|contribution/i.test(cleaned)) continue;
-
       nameCandidates.push({
         text: cleaned,
         x,
@@ -749,9 +723,7 @@
         cy: y + hh / 2
       });
     }
-
     nameCandidates.sort((a, b) => a.y - b.y || a.x - b.x);
-
     // Merge horizontally adjacent fragments
     const merged = [];
     for (const cand of nameCandidates) {
@@ -768,7 +740,6 @@
         merged.push({ ...cand });
       }
     }
-
     // Collapse vertical near-duplicates
     const uniqueNames = [];
     for (const m of merged) {
@@ -779,28 +750,21 @@
         uniqueNames.push(m);
       }
     }
-
     const out = [];
-
     for (let i = 0; i < uniqueNames.length; i++) {
       const nm = uniqueNames[i];
       e.ocrProgress.textContent = `Screenshot ${index}/${total}: player ${i + 1}/${
         uniqueNames.length
       }…`;
-
       // Class: start at name X and walk LEFT until we find a colored icon
       const cls = classifyIcon(c, nm.x, nm.cy);
       if (!cls.class) continue;
-
       // Power: start after the class icon so we skip the black sword/staff
       const powerResult = await readPowerNearName(c, nm.x, nm.y, cls.iconX);
       if (!powerResult || powerResult.power === null) continue;
-
       // Skip very low-confidence power on half-visible bottom rows
       if (powerResult.confidence < 25 && powerResult.power < 500000) continue;
-
       const match = findMatch(nm.text);
-
       const nameConfidence = nm.conf;
       const confidence = Math.round(
         ((nameConfidence / 100) * 0.4 +
@@ -808,7 +772,6 @@
           cls.confidence * 0.25) *
           100
       );
-
       out.push({
         name: nm.text,
         class: cls.class,
@@ -820,10 +783,8 @@
         ocr: `${nm.text} ${powerResult.text}`
       });
     }
-
     return out;
   }
-
   /* =========================================================
      MERGE DUPLICATE RESULTS FROM MULTIPLE SCREENSHOTS
   ========================================================= */
@@ -837,7 +798,6 @@
     }
     return [...map.values()].sort((a, b) => a.name.localeCompare(b.name));
   }
-
   /* =========================================================
      RENDER OCR REVIEW
   ========================================================= */
@@ -849,16 +809,13 @@
       e.applyScreenshots.disabled = true;
       return;
     }
-
     const seenIds = new Set(pendingRows.filter(r => r.matchId).map(r => r.matchId));
     const missing = state.members.filter(m => !seenIds.has(m.id));
-
     e.ocrSummary.innerHTML =
       `<b>${pendingRows.length}</b> unique players detected. ` +
       (missing.length
         ? `<b>${missing.length}</b> existing players were not detected; they will <u>not</u> be deleted.`
         : 'All existing players were detected.');
-
     e.ocrResults.innerHTML =
       `<div class="tablewrap">
         <table>
@@ -914,10 +871,8 @@
             </div>
           </details>`
         : '');
-
     e.applyScreenshots.disabled = false;
   }
-
   /* =========================================================
      RUN OCR ON SELECTED FILES
   ========================================================= */
@@ -932,14 +887,12 @@
       alert('Please upload no more than 10 screenshots at once.');
       return;
     }
-
     ocrBusy = true;
     e.applyScreenshots.disabled = true;
     e.clearScreenshots.disabled = true;
     pendingRows = [];
     e.ocrResults.innerHTML = '';
     e.ocrSummary.textContent = 'Starting…';
-
     try {
       const all = [];
       const files = [...e.screenshotFiles.files];
@@ -964,7 +917,6 @@
       e.clearScreenshots.disabled = false;
     }
   }
-
   /* =========================================================
      COLLECT + APPLY REVIEWED DATA
   ========================================================= */
@@ -981,7 +933,6 @@
       })
       .filter(Boolean);
   }
-
   function applyScreenshotChanges() {
     if (!master) return;
     const rows = collectOcrRows();
@@ -989,10 +940,8 @@
       alert('There are no valid checked rows to apply.');
       return;
     }
-
     let updated = 0;
     let added = 0;
-
     for (const r of rows) {
       let match = state.members.find(
         m => normalizeName(m.name) === normalizeName(r.name)
@@ -1001,12 +950,12 @@
         const suggestion = findMatch(r.name);
         if (suggestion && suggestion.score >= 0.88) match = suggestion.member;
       }
-
       if (match) {
         const changed =
           match.name !== r.name ||
           match.class !== r.class ||
           Number(match.power) !== r.power;
+        // Preserve existing fourV4 flag on updates
         Object.assign(match, { name: r.name, class: r.class, power: r.power });
         if (changed) updated++;
       } else {
@@ -1015,12 +964,12 @@
           name: r.name,
           class: r.class,
           power: r.power,
-          notes: ''
+          notes: '',
+          fourV4: true
         });
         added++;
       }
     }
-
     state.teams = gen(state.members);
     save();
     render();
@@ -1031,7 +980,6 @@
     pendingRows = [];
     e.screenshotFiles.value = '';
   }
-
   /* =========================================================
      SCREENSHOT UI
   ========================================================= */
@@ -1045,7 +993,6 @@
     e.applyScreenshots.disabled = true;
     e.screenshotDialog.showModal();
   };
-
   e.screenshotFiles.onchange = () => {
     if (e.screenshotFiles.files.length) {
       e.ocrSummary.textContent =
@@ -1054,7 +1001,6 @@
         ' selected.';
     }
   };
-
   e.clearScreenshots.onclick = () => {
     if (ocrBusy) return;
     e.screenshotFiles.value = '';
@@ -1065,24 +1011,19 @@
       'Choose your screenshots, then click Process Screenshots.';
     e.applyScreenshots.disabled = true;
   };
-
   e.applyScreenshots.onclick = applyScreenshotChanges;
-
   document.querySelectorAll('[data-process-screenshots]').forEach(b => {
     b.onclick = runScreenshotImport;
   });
-
   /* =========================================================
      GENERAL UI
   ========================================================= */
   document.querySelectorAll('[data-close]').forEach(b => {
     b.onclick = () => $(b.dataset.close).close();
   });
-
   [e.search, e.classFilter, e.sort].forEach(x =>
     x.addEventListener('input', roster)
   );
-
   /* =========================================================
      START
   ========================================================= */
