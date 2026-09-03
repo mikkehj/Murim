@@ -33,7 +33,7 @@
     },
     {
       "id": "7a6fdb19-3f9d-402d-9e33-0abaf0f9af48",
-      "name": "AriZaddy",
+      "name": "Joker",
       "class": "Archmage",
       "power": 3290000,
       "notes": ""
@@ -127,13 +127,6 @@
       "name": "Fidibus",
       "class": "Berserker",
       "power": 4310000,
-      "notes": ""
-    },
-    {
-      "id": "5001f20f-3ab3-451d-b383-3f5403021501",
-      "name": "Grimlocke",
-      "class": "Berserker",
-      "power": 2130000,
       "notes": ""
     },
     {
@@ -235,13 +228,6 @@
       "notes": ""
     },
     {
-      "id": "32d62f09-640e-465a-9771-39bf54cdb6de",
-      "name": "sistersloth",
-      "class": "Archmage",
-      "power": 2000000,
-      "notes": ""
-    },
-    {
       "id": "f0bba2a4-142f-4a34-b334-8bd8c6a5c4e8",
       "name": "Spoke",
       "class": "Arcanist",
@@ -267,13 +253,6 @@
       "name": "Suian",
       "class": "Archmage",
       "power": 3540000,
-      "notes": ""
-    },
-    {
-      "id": "b36c9ff4-85bf-49a7-b212-f31fb43b8c4c",
-      "name": "SweetMinying",
-      "class": "Berserker",
-      "power": 2190000,
       "notes": ""
     },
     {
