@@ -12,4 +12,4 @@ Because the site is completely static, browser JavaScript cannot write changes b
 
 ## Team generation
 
-Members are separated into Berserker, Paladin, Archmage, and Arcanist; each class is sorted highest-power first; Team 1 gets rank 1 from each class, Team 2 gets rank 2, and so on. Teams never exceed four players and a team may have fewer than four players when a class has fewer members. A maximum of 15 teams is generated.
+Members are separated into Berserker, Paladin, Archmage, and Arcanist; each class is sorted highest-power first; Team 1 gets rank 1 from each class, Team 2 gets rank 2, and so on. Teams never exceed four players and a team may be filled with just DPS when we lack Paladin or Arcanists. A maximum of 15 teams is generated.
