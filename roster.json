@@ -209,7 +209,7 @@
       "class": "Paladin",
       "power": 6340000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "79168a1f-477a-4c7b-ae8f-ff3fd867de88",
@@ -369,7 +369,7 @@
       "class": "Paladin",
       "power": 6530000,
       "notes": "",
-      "fourV4": false
+      "fourV4": true
     },
     {
       "id": "af448582-1bc8-4821-ac22-405d5f3b95bf",
