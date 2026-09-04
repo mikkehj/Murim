@@ -109,6 +109,7 @@
   ========================================================= */
   function gen(ms) {
     const eligible = ms.filter(m => m.fourV4 !== false);
+  
     const paladins = eligible
       .filter(m => m.class === 'Paladin')
       .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
@@ -118,14 +119,39 @@
     const dps = eligible
       .filter(m => m.class === 'Berserker' || m.class === 'Archmage')
       .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
-    const teamCount = Math.min(15, paladins.length, arcanists.length, Math.floor(dps.length / 2));
+  
+    const used = new Set();
     const out = [];
-    for (let i = 0; i < teamCount; i++) {
+    let teamNum = 1;
+  
+    // 1. Form as many ideal teams as possible (1 Paladin + 1 Arcanist + 2 DPS)
+    let p = 0, a = 0, d = 0;
+    while (
+      teamNum <= 15 &&
+      p < paladins.length &&
+      a < arcanists.length &&
+      d + 1 < dps.length
+    ) {
+      const team = [paladins[p++], arcanists[a++], dps[d++], dps[d++]];
+      team.forEach(m => used.add(m.id));
       out.push({
-        number: i + 1,
-        playerIds: [paladins[i], arcanists[i], dps[i * 2], dps[i * 2 + 1]].map(p => p.id)
+        number: teamNum++,
+        playerIds: team.map(m => m.id)
       });
     }
+  
+    // 2. Remaining players → pack into extra teams of 4 (mostly pure DPS)
+    const remaining = eligible
+      .filter(m => !used.has(m.id))
+      .sort((a, b) => Number(b.power) - Number(a.power) || a.name.localeCompare(b.name));
+  
+    for (let i = 0; i + 3 < remaining.length && teamNum <= 15; i += 4) {
+      out.push({
+        number: teamNum++,
+        playerIds: remaining.slice(i, i + 4).map(m => m.id)
+      });
+    }
+  
     return out;
   }
   /* =========================================================
