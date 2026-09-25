@@ -1,21 +1,21 @@
 {
   "format": "sword-x-staff-guild-planner",
   "version": 4,
-  "exportedAt": "2026-09-18T08:44:47.809Z",
+  "exportedAt": "2026-09-25T17:13:26.929Z",
   "members": [
     {
       "id": "003f9d05-a3cd-441f-a3d1-2586c352c40e",
-      "name": "Aisuru",
+      "name": "Wrath",
       "class": "Berserker",
-      "power": 4780000,
+      "power": 7440000,
       "notes": "Cult Leader",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "40fa14a1-93c3-49ed-8a24-8276a877ff7c",
       "name": "AguayoFlyo",
       "class": "Berserker",
-      "power": 4190000,
+      "power": 6300000,
       "notes": "",
       "fourV4": false
     },
@@ -23,23 +23,15 @@
       "id": "fd0a477e-831c-4353-b535-cd15f2a0d634",
       "name": "^-^",
       "class": "Berserker",
-      "power": 3420000,
-      "notes": "",
-      "fourV4": true
-    },
-    {
-      "id": "747c5bfc-2b65-4ff9-b91d-7e352e0880a4",
-      "name": "AreYaWinningSon?",
-      "class": "Archmage",
-      "power": 3080000,
+      "power": 5280000,
       "notes": "",
       "fourV4": true
     },
     {
       "id": "7a6fdb19-3f9d-402d-9e33-0abaf0f9af48",
-      "name": "Joker",
+      "name": "Lust",
       "class": "Paladin",
-      "power": 4290000,
+      "power": 6540000,
       "notes": "",
       "fourV4": true
     },
@@ -47,7 +39,7 @@
       "id": "58c2aef6-ed49-43af-8bc2-dae02e7b2dc8",
       "name": "Az",
       "class": "Arcanist",
-      "power": 4120000,
+      "power": 6230000,
       "notes": "",
       "fourV4": false
     },
@@ -55,7 +47,7 @@
       "id": "48ef26da-e222-4199-a088-cc0f983f1821",
       "name": "WildBadgerLord",
       "class": "Archmage",
-      "power": 3740000,
+      "power": 5860000,
       "notes": "",
       "fourV4": true
     },
@@ -63,15 +55,15 @@
       "id": "9bdde669-0929-4594-99d1-d42f07519fa8",
       "name": "Zabaniya",
       "class": "Archmage",
-      "power": 5250000,
+      "power": 7760000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "d57d5e81-14a8-42ad-8ee6-5a4631e76c65",
-      "name": "BrotherNastrian",
+      "name": "Nastrian",
       "class": "Berserker",
-      "power": 4250000,
+      "power": 6080000,
       "notes": "",
       "fourV4": true
     },
@@ -79,7 +71,7 @@
       "id": "2daaa1e4-66da-47a4-b0cd-3006f85b4215",
       "name": "Crackerjack",
       "class": "Archmage",
-      "power": 4080000,
+      "power": 6670000,
       "notes": "",
       "fourV4": true
     },
@@ -87,7 +79,7 @@
       "id": "64834e23-35e2-460c-9683-2d29a9f31a63",
       "name": "Corby",
       "class": "Archmage",
-      "power": 3640000,
+      "power": 5210000,
       "notes": "",
       "fourV4": false
     },
@@ -95,23 +87,15 @@
       "id": "5f97682c-92d9-45c1-b4e0-4bee3c2c05d2",
       "name": "CousinKirdorm",
       "class": "Arcanist",
-      "power": 4140000,
+      "power": 6260000,
       "notes": "",
       "fourV4": true
-    },
-    {
-      "id": "5d1d8b08-78f3-48ec-8517-fd90bac493fb",
-      "name": "DieNasty",
-      "class": "Arcanist",
-      "power": 3360000,
-      "notes": "",
-      "fourV4": false
     },
     {
       "id": "57b8d6a7-2dee-4eaf-937a-26d6228bc724",
       "name": "Envy",
       "class": "Arcanist",
-      "power": 4730000,
+      "power": 6740000,
       "notes": "",
       "fourV4": false
     },
@@ -119,7 +103,7 @@
       "id": "e84ca0d5-99ab-402d-a81d-1095081e5216",
       "name": "FatherZyk",
       "class": "Berserker",
-      "power": 3300000,
+      "power": 4690000,
       "notes": "",
       "fourV4": true
     },
@@ -127,23 +111,15 @@
       "id": "ad5ceed4-cb58-48f9-8c77-8d96faefc5f6",
       "name": "Feetoe",
       "class": "Berserker",
-      "power": 4750000,
+      "power": 6860000,
       "notes": "",
       "fourV4": true
-    },
-    {
-      "id": "58448ce9-1f19-45a8-9e0c-862e049439fa",
-      "name": "Fidibus",
-      "class": "Berserker",
-      "power": 4820000,
-      "notes": "",
-      "fourV4": false
     },
     {
       "id": "405f3b6b-4812-4716-9a2c-6e8f8bef2826",
       "name": "iEatDaRice",
       "class": "Archmage",
-      "power": 3740000,
+      "power": 5470000,
       "notes": "",
       "fourV4": true
     },
@@ -151,7 +127,7 @@
       "id": "69ca0feb-e188-4f3a-81b7-16606e2250ac",
       "name": "Lunar_Saints",
       "class": "Archmage",
-      "power": 3550000,
+      "power": 4840000,
       "notes": "",
       "fourV4": false
     },
@@ -159,7 +135,7 @@
       "id": "12db4851-f8e5-44b8-acdc-412a64815661",
       "name": "KeyK",
       "class": "Berserker",
-      "power": 3500000,
+      "power": 5580000,
       "notes": "",
       "fourV4": false
     },
@@ -167,7 +143,7 @@
       "id": "82be425e-48b7-4a9f-b9f2-79af1130795a",
       "name": "KittenTsuki",
       "class": "Berserker",
-      "power": 2950000,
+      "power": 3850000,
       "notes": "",
       "fourV4": true
     },
@@ -175,7 +151,7 @@
       "id": "87588fa1-ca53-4b6e-a453-c96c85310c4b",
       "name": "Shuu",
       "class": "Arcanist",
-      "power": 3640000,
+      "power": 6160000,
       "notes": "",
       "fourV4": false
     },
@@ -183,7 +159,7 @@
       "id": "4a007336-c76a-4dc2-bdd8-5ae591fb05bc",
       "name": "sagie",
       "class": "Arcanist",
-      "power": 4000000,
+      "power": 6130000,
       "notes": "",
       "fourV4": true
     },
@@ -191,7 +167,7 @@
       "id": "5165617e-5b0f-4e51-b3e8-a3b6603ee5a1",
       "name": "Mistaluva",
       "class": "Paladin",
-      "power": 4500000,
+      "power": 6610000,
       "notes": "",
       "fourV4": true
     },
@@ -199,7 +175,7 @@
       "id": "bac99cc4-281f-48a4-bae7-f7be9ad25de8",
       "name": "ButlerSilver",
       "class": "Paladin",
-      "power": 3630000,
+      "power": 5860000,
       "notes": "",
       "fourV4": true
     },
@@ -207,15 +183,15 @@
       "id": "8bbce437-5e23-42ca-afe1-f639ec990009",
       "name": "Dora",
       "class": "Paladin",
-      "power": 5860000,
+      "power": 8310000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "79168a1f-477a-4c7b-ae8f-ff3fd867de88",
       "name": "pringles",
       "class": "Paladin",
-      "power": 4060000,
+      "power": 6320000,
       "notes": "",
       "fourV4": true
     },
@@ -223,7 +199,7 @@
       "id": "44c105f4-9376-4b81-87fc-0768755fe24c",
       "name": "Ragen",
       "class": "Archmage",
-      "power": 4760000,
+      "power": 6590000,
       "notes": "",
       "fourV4": true
     },
@@ -231,15 +207,15 @@
       "id": "e2e83dd1-b888-45a2-bb43-1293484603dd",
       "name": "GrandpaAzmo",
       "class": "Paladin",
-      "power": 3500000,
+      "power": 5200000,
       "notes": "",
-      "fourV4": false
+      "fourV4": true
     },
     {
       "id": "2890edec-aec7-4dac-9ee2-f802eab181b6",
       "name": "Razan",
       "class": "Berserker",
-      "power": 3210000,
+      "power": 4510000,
       "notes": "",
       "fourV4": false
     },
@@ -247,7 +223,7 @@
       "id": "f0bba2a4-142f-4a34-b334-8bd8c6a5c4e8",
       "name": "Spoke",
       "class": "Arcanist",
-      "power": 4000000,
+      "power": 6070000,
       "notes": "",
       "fourV4": false
     },
@@ -255,7 +231,7 @@
       "id": "afe0db3f-97df-403e-b0b2-b1b63e64f7a4",
       "name": "Kiw1",
       "class": "Arcanist",
-      "power": 3450000,
+      "power": 5050000,
       "notes": "",
       "fourV4": true
     },
@@ -263,23 +239,15 @@
       "id": "a2107fff-c466-46fa-837f-95635d83ae7e",
       "name": "StepsisM3rlin",
       "class": "Archmage",
-      "power": 3890000,
+      "power": 6060000,
       "notes": "",
       "fourV4": true
-    },
-    {
-      "id": "55a9ba67-733c-4964-80c2-e49547e4ad69",
-      "name": "Gnom",
-      "class": "Arcanist",
-      "power": 3040000,
-      "notes": "",
-      "fourV4": false
     },
     {
       "id": "a0501e24-f713-443d-a57d-426c3415ad6b",
       "name": "turtleni",
       "class": "Archmage",
-      "power": 3480000,
+      "power": 5250000,
       "notes": "",
       "fourV4": true
     },
@@ -287,15 +255,15 @@
       "id": "4b494925-41a6-4633-9c45-ba58e0e530e5",
       "name": "Uncle",
       "class": "Arcanist",
-      "power": 6380000,
+      "power": 9240000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "265b7307-d30a-44ef-9015-62025b5f3ca9",
       "name": "UncleAmp",
       "class": "Archmage",
-      "power": 4540000,
+      "power": 6510000,
       "notes": "",
       "fourV4": true
     },
@@ -303,7 +271,7 @@
       "id": "0e14c3bf-3126-453a-8faa-b3b905d425f6",
       "name": "UncOG",
       "class": "Paladin",
-      "power": 4910000,
+      "power": 7210000,
       "notes": "",
       "fourV4": false
     },
@@ -311,7 +279,7 @@
       "id": "3488ecb8-9519-4bcf-93e5-4b7c81fcb8ce",
       "name": "Magnetica",
       "class": "Arcanist",
-      "power": 3870000,
+      "power": 5890000,
       "notes": "",
       "fourV4": true
     },
@@ -319,7 +287,7 @@
       "id": "7522fe78-3fb2-4ece-ad5d-b1e37b87f85e",
       "name": "Orihimai",
       "class": "Archmage",
-      "power": 3470000,
+      "power": 4590000,
       "notes": "",
       "fourV4": false
     },
@@ -327,7 +295,7 @@
       "id": "c8b76605-1e52-402e-82ec-8be88b6245d1",
       "name": "Zhuo",
       "class": "Archmage",
-      "power": 3510000,
+      "power": 5220000,
       "notes": "",
       "fourV4": false
     },
@@ -335,31 +303,23 @@
       "id": "abda4536-4c29-4a1b-ade1-680eb27705be",
       "name": "Menandore",
       "class": "Archmage",
-      "power": 5960000,
+      "power": 9270000,
       "notes": "",
-      "fourV4": false
+      "fourV4": true
     },
     {
       "id": "56f55144-bc05-44ba-a342-d1a55039b222",
       "name": "Spacedacay",
       "class": "Archmage",
-      "power": 3960000,
+      "power": 5810000,
       "notes": "",
       "fourV4": false
     },
     {
-      "id": "c03fd059-9632-4baf-8ffe-b9278cc2bdff",
-      "name": "Youmo",
-      "class": "Paladin",
-      "power": 6170000,
-      "notes": "",
-      "fourV4": true
-    },
-    {
       "id": "af448582-1bc8-4821-ac22-405d5f3b95bf",
-      "name": "pinkie",
+      "name": "Gia",
       "class": "Archmage",
-      "power": 3250000,
+      "power": 4450000,
       "notes": "",
       "fourV4": false
     },
@@ -367,7 +327,7 @@
       "id": "7d64a85d-0964-47bc-b2cb-e6d1ba7c6a7c",
       "name": "WalleyeWizard",
       "class": "Berserker",
-      "power": 3460000,
+      "power": 5250000,
       "notes": "",
       "fourV4": false
     },
@@ -375,7 +335,7 @@
       "id": "482bd6e5-98a6-4c34-829e-bdbdd9007532",
       "name": "Koross",
       "class": "Paladin",
-      "power": 3110000,
+      "power": 4260000,
       "notes": "",
       "fourV4": false
     },
@@ -383,15 +343,15 @@
       "id": "64f0f657-7642-40f8-bb11-adc70ce9093b",
       "name": "Vladimir_Lenin",
       "class": "Berserker",
-      "power": 7620000,
+      "power": 10800000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     },
     {
       "id": "ab880c10-e696-4254-92c8-7727386fd419",
       "name": "MK35",
       "class": "Archmage",
-      "power": 6720000,
+      "power": 10100000,
       "notes": "",
       "fourV4": false
     },
@@ -399,7 +359,7 @@
       "id": "ef1c7c67-e466-4a0e-87ef-91f7901943cc",
       "name": "Weorit",
       "class": "Berserker",
-      "power": 6310000,
+      "power": 9880000,
       "notes": "",
       "fourV4": true
     },
@@ -407,7 +367,7 @@
       "id": "366f3b43-2c4c-4688-ae7b-7f63c9c2ce15",
       "name": "Chugale",
       "class": "Berserker",
-      "power": 6580000,
+      "power": 9860000,
       "notes": "",
       "fourV4": false
     },
@@ -415,7 +375,7 @@
       "id": "cb4b4be8-c6a6-4490-b506-a8943bbe3145",
       "name": "SizzGlizzy",
       "class": "Berserker",
-      "power": 5410000,
+      "power": 7690000,
       "notes": "",
       "fourV4": false
     },
@@ -423,7 +383,7 @@
       "id": "89eaeefc-c2a6-47ed-ac64-54742916f166",
       "name": "TheOriginal",
       "class": "Archmage",
-      "power": 4700000,
+      "power": 6050000,
       "notes": "",
       "fourV4": false
     },
@@ -431,26 +391,73 @@
       "id": "92912931-9f05-4630-a60e-3aca7263ce29",
       "name": "Medea",
       "class": "Arcanist",
-      "power": 4720000,
+      "power": 6720000,
       "notes": "",
       "fourV4": true
-    },
-    {
-      "id": "b271c6bb-afd5-4f9d-bda3-0c74f0312938",
-      "name": "Zaltix",
-      "class": "Archmage",
-      "power": 3920000,
-      "notes": "",
-      "fourV4": false
     },
     {
       "id": "2be53bf6-5009-4ddc-bc32-7b6efa45874b",
-      "name": "sucitreboB",
+      "name": "EbNoVbY",
       "class": "Arcanist",
-      "power": 7320000,
+      "power": 10500000,
       "notes": "",
-      "fourV4": true
+      "fourV4": false
     }
   ],
-  "teams": []
+  "teams": [
+    {
+      "number": 1,
+      "playerIds": [
+        "5165617e-5b0f-4e51-b3e8-a3b6603ee5a1",
+        "92912931-9f05-4630-a60e-3aca7263ce29",
+        "ef1c7c67-e466-4a0e-87ef-91f7901943cc",
+        "abda4536-4c29-4a1b-ade1-680eb27705be"
+      ]
+    },
+    {
+      "number": 2,
+      "playerIds": [
+        "7a6fdb19-3f9d-402d-9e33-0abaf0f9af48",
+        "5f97682c-92d9-45c1-b4e0-4bee3c2c05d2",
+        "ad5ceed4-cb58-48f9-8c77-8d96faefc5f6",
+        "2daaa1e4-66da-47a4-b0cd-3006f85b4215"
+      ]
+    },
+    {
+      "number": 3,
+      "playerIds": [
+        "79168a1f-477a-4c7b-ae8f-ff3fd867de88",
+        "4a007336-c76a-4dc2-bdd8-5ae591fb05bc",
+        "44c105f4-9376-4b81-87fc-0768755fe24c",
+        "265b7307-d30a-44ef-9015-62025b5f3ca9"
+      ]
+    },
+    {
+      "number": 4,
+      "playerIds": [
+        "bac99cc4-281f-48a4-bae7-f7be9ad25de8",
+        "3488ecb8-9519-4bcf-93e5-4b7c81fcb8ce",
+        "d57d5e81-14a8-42ad-8ee6-5a4631e76c65",
+        "a2107fff-c466-46fa-837f-95635d83ae7e"
+      ]
+    },
+    {
+      "number": 5,
+      "playerIds": [
+        "e2e83dd1-b888-45a2-bb43-1293484603dd",
+        "afe0db3f-97df-403e-b0b2-b1b63e64f7a4",
+        "48ef26da-e222-4199-a088-cc0f983f1821",
+        "405f3b6b-4812-4716-9a2c-6e8f8bef2826"
+      ]
+    },
+    {
+      "number": 6,
+      "playerIds": [
+        "fd0a477e-831c-4353-b535-cd15f2a0d634",
+        "a0501e24-f713-443d-a57d-426c3415ad6b",
+        "e84ca0d5-99ab-402d-a81d-1095081e5216",
+        "82be425e-48b7-4a9f-b9f2-79af1130795a"
+      ]
+    }
+  ]
 }
